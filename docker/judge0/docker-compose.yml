@@ -1,3 +1,5 @@
+name: judge0
+
 x-logging:
   &default-logging
   logging:
@@ -15,6 +17,9 @@ services:
     privileged: true
     <<: *default-logging
     restart: always
+    depends_on:
+      - db
+      - redis
 
   workers:
     image: judge0/judge0:1.13.1
@@ -24,6 +29,9 @@ services:
     privileged: true
     <<: *default-logging
     restart: always
+    depends_on:
+      - db
+      - redis
 
   db:
     image: postgres:16.2
