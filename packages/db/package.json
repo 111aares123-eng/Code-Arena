@@ -1,0 +1,31 @@
+{
+  "name": "@code-arena/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate",
+    "push": "drizzle-kit push",
+    "studio": "drizzle-kit studio",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@code-arena/shared": "workspace:*",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "drizzle-kit": "^0.30.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

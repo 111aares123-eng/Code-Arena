@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 **/node_modules/
 
@@ -15,6 +15,9 @@ coverage/
 .env
 .env.*
 !.env.example
+docker/judge0/judge0.conf
+judge0-temp/
+judge0-release.zip
 
 # pnpm internal state
 node_modules/.pnpm-task-run-state-v1/

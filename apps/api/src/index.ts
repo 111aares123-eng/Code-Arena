@@ -3,6 +3,9 @@ import { trpcServer } from '@hono/trpc-server'
 import { initTRPC } from '@trpc/server'
 import { Hono } from 'hono'
 
+import { problemRouter } from './routers/problem'
+import { executionRouter } from './routers/execution'
+
 const t = initTRPC.create()
 export const router = t.router
 export const publicProcedure = t.procedure
@@ -14,6 +17,8 @@ export const appRouter = router({
       message: 'CodeArena API is running!',
     }
   }),
+  problem: problemRouter,
+  execution: executionRouter,
 })
 
 export type AppRouter = typeof appRouter
