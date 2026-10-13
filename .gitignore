@@ -1,0 +1,20 @@
+﻿# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js
+.next/
+**/.next/
+out/
+
+# Build output
+dist/
+coverage/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# pnpm internal state
+node_modules/.pnpm-task-run-state-v1/
