@@ -88,7 +88,13 @@ export async function recordContestSubmission(
       )
       .limit(1);
 
-    const problemPoints = problemConfigs[0]?.points ?? 100;
+    if (!problemConfigs[0]) {
+      throw new Error(
+        `Problem with ID "${params.problemId}" is not configured for contest "${params.contestId}".`
+      );
+    }
+
+    const problemPoints = problemConfigs[0].points;
 
     // 2. Determine acceptance: award contest points only for fully accepted submissions
     const isAccepted = params.verdict === 'ACCEPTED';
