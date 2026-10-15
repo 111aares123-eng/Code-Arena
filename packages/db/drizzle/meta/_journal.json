@@ -8,6 +8,13 @@
       "when": 1791894696503,
       "tag": "0000_lucky_morlocks",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792078085690,
+      "tag": "0001_damp_madame_hydra",
+      "breakpoints": true
     }
   ]
 }
