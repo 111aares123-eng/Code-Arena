@@ -32,12 +32,12 @@ export function Navbar() {
                 Phase 2
               </span>
             </div>
-            <div className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-zinc-500 cursor-not-allowed">
-              <span>Leaderboard</span>
-              <span className="text-[10px] font-semibold text-zinc-500 bg-zinc-800/80 border border-zinc-700/60 px-1.5 py-0.2 rounded">
-                Phase 3
-              </span>
-            </div>
+            <Link
+              href="/arena"
+              className="px-3 py-1.5 rounded-md text-sm font-medium text-zinc-200 hover:text-white hover:bg-zinc-850/80 transition-colors"
+            >
+              Arena
+            </Link>
           </nav>
         </div>
 
@@ -52,7 +52,7 @@ export function Navbar() {
             href="/problems"
             className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition-colors"
           >
-            Explore Library
+            Enter Arena
           </Link>
         </div>
       </div>
