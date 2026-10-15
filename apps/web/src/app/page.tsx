@@ -13,7 +13,7 @@ export default function Home() {
         <div className="mx-auto max-w-5xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-1 text-xs font-semibold text-indigo-300 mb-6">
             <span className="flex h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
-            Phase 2B • PostgreSQL & tRPC API Live
+            Practice XP · achievement preview · live feed foundation
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
@@ -30,8 +30,16 @@ export default function Home() {
           {/* Action CTAs */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="/problems"
+              href="/arena"
               className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition-all hover:scale-105"
+            >
+              Enter the Arena
+              <span aria-hidden="true">→</span>
+            </Link>
+
+            <Link
+              href="/problems"
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900/80 px-6 py-3 text-sm font-semibold text-zinc-200 hover:bg-zinc-800 hover:text-white transition-colors"
             >
               Browse Problem Library
               <span aria-hidden="true">→</span>

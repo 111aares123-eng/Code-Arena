@@ -292,6 +292,19 @@ export function TestCasesPanel({
                     </span>
                   </div>
                   <p className="text-[11px] opacity-90">{lastSubmitResult.summary}</p>
+                  <p className="mt-1 text-[11px] font-medium text-white/90" aria-live="polite">
+                    {lastSubmitResult.verdict === 'SAMPLE_PASSED'
+                      ? 'Nice work. The samples are clear, and your practice profile just got a little stronger.'
+                      : lastSubmitResult.verdict === 'SERVICE_UNAVAILABLE'
+                      ? 'The judge is catching its breath. Your code was not scored, so try again in a moment.'
+                      : lastSubmitResult.verdict === 'COMPILE_ERROR'
+                      ? 'The compiler found something to work through. Start with the first compiler message.'
+                      : lastSubmitResult.verdict === 'RUNTIME_ERROR'
+                      ? 'Your code started, then hit a runtime error. Check the failing sample and error output.'
+                      : lastSubmitResult.verdict === 'TIME_LIMIT_EXCEEDED'
+                      ? 'Your solution is still thinking. Check the loop complexity and look for repeated work.'
+                      : 'Close, but not there yet. Find the first sample that disagrees and trace it by hand.'}
+                  </p>
                   <p className="text-[10px] mt-2 pt-1 border-t border-current/20 opacity-80">
                     {lastSubmitResult.disclaimer}
                   </p>

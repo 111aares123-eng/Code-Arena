@@ -24,3 +24,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.arena-shell {
+  background:
+    radial-gradient(ellipse at 15% 0%, rgb(79 70 229 / 0.08), transparent 32rem),
+    #090d14;
+}
+
+.arena-hero {
+  background-image: radial-gradient(ellipse at 90% 5%, rgb(99 102 241 / 0.14), transparent 28rem);
+}
+
+.arena-grid {
+  background-image: linear-gradient(rgb(148 163 184 / 0.055) 1px, transparent 1px), linear-gradient(90deg, rgb(148 163 184 / 0.055) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to right, black, transparent 78%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -9,6 +9,7 @@ import {
 } from '@code-arena/shared';
 import { getDb, problems, eq, and } from '@code-arena/db';
 import { getMockProblemBySlug } from '@code-arena/shared';
+import { publishPracticeSamplePassed } from '../services/activity-feed';
 import {
   executeWithJudge0,
   compareOutputs,
@@ -276,6 +277,10 @@ export const executionRouter = router({
       } else {
         verdict = 'SAMPLE_FAILED';
         summary = `${passedCases}/${examples.length} sample test cases passed.`;
+      }
+
+      if (verdict === 'SAMPLE_PASSED') {
+        publishPracticeSamplePassed({ slug: problem.slug, title: problem.title });
       }
 
       return {
