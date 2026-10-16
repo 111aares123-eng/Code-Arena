@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { calculateStreak, getAchievements, longestStreak, dateKey, XP_PER_SOLVE, XP_PER_LEVEL } from '../../lib/game-rules';
+import { getMockProblems } from '@code-arena/shared';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   EMPTY_PRACTICE_PROGRESS,
@@ -23,8 +25,7 @@ type FeedEvent = {
 type BoardPeriod = 'Today' | 'This week' | 'All time';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-const XP_PER_PRACTICE_SOLVE = 25;
-const XP_PER_LEVEL = 100;
+const XP_PER_PRACTICE_SOLVE = XP_PER_SOLVE;
 
 const sampleEvents: FeedEvent[] = [
   { id: 'preview-1', type: 'practice_sample_passed', problemSlug: 'two-sum', problemTitle: 'Two Sum', createdAt: '2026-10-15T11:42:00.000Z', relativeTime: '8m ago' },
@@ -57,27 +58,6 @@ function formatTime(isoDate: string) {
   const elapsedHours = Math.floor(elapsedMinutes / 60);
   if (elapsedHours < 24) return `${elapsedHours}h ago`;
   return `${Math.floor(elapsedHours / 24)}d ago`;
-}
-
-function calculateStreak(practiceDays: string[], today: string) {
-  if (today === SERVER_DAY_SNAPSHOT) return 0;
-  const days = new Set(practiceDays);
-  let streak = 0;
-  let day = today;
-  if (!days.has(day)) {
-    const yesterday = new Date(`${day}T12:00:00`);
-    yesterday.setDate(yesterday.getDate() - 1);
-    day = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-  }
-
-  while (days.has(day)) {
-    streak += 1;
-    const previous = new Date(`${day}T12:00:00`);
-    previous.setDate(previous.getDate() - 1);
-    day = `${previous.getFullYear()}-${String(previous.getMonth() + 1).padStart(2, '0')}-${String(previous.getDate()).padStart(2, '0')}`;
-  }
-
-  return streak;
 }
 
 function ActivityIcon() {
@@ -135,7 +115,17 @@ export function ArenaDashboard() {
   const streak = useMemo(() => calculateStreak(progress.practiceDays, today), [progress.practiceDays, today]);
   const level = Math.floor(progress.xp / XP_PER_LEVEL) + 1;
   const levelProgress = progress.xp % XP_PER_LEVEL;
-  const firstStepsEarned = progress.solvedProblemSlugs.length > 0;
+  const achievements = getAchievements(progress);
+  const nextAchievement = achievements.find((item) => item.current < item.target);
+  const earnedCount = achievements.filter((item) => item.current >= item.target).length;
+  const practicedToday = progress.practiceDays.includes(today);
+  const recentDays = today === SERVER_DAY_SNAPSHOT ? [] : Array.from({ length: 28 }, (_, index) => {
+    const day = new Date(`${today}T12:00:00`);
+    day.setDate(day.getDate() - (27 - index));
+    return dateKey(day);
+  });
+  const challenges = getMockProblems();
+  const warmup = challenges.find((problem) => !progress.solvedProblemSlugs.includes(problem.slug)) ?? challenges[0];
   const filteredEvents = activityFilter === 'All' ? events : events.filter((event) => event.type === 'practice_sample_passed');
   const currentBoard = previewBoards[boardPeriod];
 
@@ -200,16 +190,32 @@ export function ArenaDashboard() {
               <div className="col-span-2 rounded-2xl border border-indigo-300/10 bg-indigo-300/[0.06] p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-medium text-indigo-100">Next achievement</p>
-                    <p className="mt-1 text-sm font-semibold text-white">First light</p>
+                    <p className="text-xs font-medium text-indigo-100">{nextAchievement ? 'Next achievement' : 'Achievement set complete'}</p>
+                    <p className="mt-1 text-sm font-semibold text-white">{nextAchievement?.name ?? 'All milestones unlocked'}</p>
                   </div>
-                  <span className="rounded-lg border border-indigo-200/15 bg-indigo-200/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-100">{firstStepsEarned ? 'Unlocked' : '1 sample pass'}</span>
+                  <span className="rounded-lg border border-indigo-200/15 bg-indigo-200/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-100">{nextAchievement ? `${nextAchievement.current}/${nextAchievement.target}` : 'Unlocked'}</span>
                 </div>
                 <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
-                  <div className={`h-full rounded-full bg-indigo-300 transition-[width] duration-500 motion-reduce:transition-none ${firstStepsEarned ? 'w-full' : 'w-0'}`} />
+                  <div className={`h-full rounded-full bg-indigo-300 transition-[width] duration-500 motion-reduce:transition-none `} style={{ width: `${nextAchievement ? nextAchievement.current / nextAchievement.target * 100 : 100}%` }} />
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="mb-6 grid gap-6 md:grid-cols-2" aria-label="Practice goals and history">
+          <div className="rounded-2xl border border-indigo-300/20 bg-indigo-400/10 p-6">
+            <p className="text-xs uppercase tracking-widest text-indigo-200">Daily quest</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">{practicedToday ? 'Quest complete!' : 'Keep your momentum'}</h2>
+            <p className="mt-2 text-sm text-zinc-300">Pass the samples for any problem today. Revisiting a solved problem keeps your streak alive; XP is awarded once per unique problem.</p>
+            <Link href="/problems" className="mt-4 inline-block rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-400">{practicedToday ? 'Practice another' : 'Start today’s quest'} →</Link>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-[#101722] p-6">
+            <div className="flex justify-between gap-3"><h2 className="font-semibold text-white">28-day practice trail</h2><span className="text-xs text-zinc-400">Best: {longestStreak(progress.practiceDays)} days</span></div>
+            <div className="mt-4 grid grid-cols-7 gap-2" aria-label="Recent practice days">
+              {recentDays.map((day) => <div key={day} title={`${day}: ${progress.practiceDays.includes(day) ? 'Practiced' : 'No practice'}`} aria-label={`${day}: ${progress.practiceDays.includes(day) ? 'Practiced' : 'No practice'}`} className={`flex h-8 items-center justify-center rounded text-[10px] ${progress.practiceDays.includes(day) ? 'bg-emerald-400/30 text-emerald-100' : 'bg-white/5 text-zinc-400'} ${day === today ? 'ring-1 ring-indigo-300' : ''}`}>{day.slice(-2)}</div>)}
+            </div>
+            <p className="mt-3 text-xs text-zinc-400">Green = practiced · outlined = today · local calendar days</p>
           </div>
         </section>
 
@@ -285,24 +291,17 @@ export function ArenaDashboard() {
                 <h2 className="text-lg font-semibold text-white">Achievement set</h2>
                 <p className="mt-1 text-xs text-zinc-400">Earned by this browser profile</p>
               </div>
-              <span className="text-xs font-medium text-zinc-500">{firstStepsEarned ? '1' : '0'} / 3</span>
+              <span className="text-xs font-medium text-zinc-500">{earnedCount} / {achievements.length}</span>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              <div className={`rounded-xl border p-3 text-center ${firstStepsEarned ? 'border-emerald-300/20 bg-emerald-300/[0.06]' : 'border-white/[0.07] bg-white/[0.02]'}`}>
-                <span className={`mx-auto flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold ${firstStepsEarned ? 'bg-emerald-300/10 text-emerald-200' : 'bg-white/5 text-zinc-500'}`} aria-hidden="true">01</span>
-                <p className="mt-2 text-[11px] font-semibold text-zinc-100">First light</p>
-                <p className="mt-1 text-[10px] text-zinc-500">First sample pass</p>
-              </div>
-              <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3 text-center">
-                <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-sm font-bold text-zinc-500" aria-hidden="true">07</span>
-                <p className="mt-2 text-[11px] font-semibold text-zinc-100">On a roll</p>
-                <p className="mt-1 text-[10px] text-zinc-500">7-day streak</p>
-              </div>
-              <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3 text-center">
-                <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-sm font-bold text-zinc-500" aria-hidden="true">03</span>
-                <p className="mt-2 text-[11px] font-semibold text-zinc-100">Three-peat</p>
-                <p className="mt-1 text-[10px] text-zinc-500">3 unique problems</p>
-              </div>
+              {achievements.map((item) => {
+                const earned = item.current >= item.target;
+                return <div key={item.id} className={`rounded-xl border p-3 text-center ${earned ? 'border-emerald-300/30 bg-emerald-300/10' : 'border-white/10 bg-white/5'}`}>
+                  <span className={`text-lg font-bold ${earned ? 'text-emerald-200' : 'text-zinc-400'}`} aria-label={earned ? 'Unlocked' : 'Locked'}>{earned ? '✓' : `${item.current}/${item.target}`}</span>
+                  <p className="mt-2 text-xs font-semibold text-zinc-100">{item.name}</p>
+                  <p className="mt-1 text-[10px] text-zinc-400">{item.description}</p>
+                </div>;
+              })}
             </div>
           </div>
 
@@ -310,10 +309,10 @@ export function ArenaDashboard() {
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-200/80">Today’s warm-up</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Two Sum</h2>
-                <p className="mt-1 max-w-md text-xs leading-5 text-zinc-400">Find the pair, pass the samples, and bank your first practice XP. Practice results don’t affect competitive rating.</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">{warmup?.title ?? "Practice library"}</h2>
+                <p className="mt-1 max-w-md text-xs leading-5 text-zinc-400">Your next unsolved challenge is ready. Pass its samples to earn practice XP. Practice results don’t affect competitive rating.</p>
               </div>
-              <Link href="/problems/two-sum" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-indigo-300/20 bg-indigo-300/10 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-300/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300">
+              <Link href={warmup ? `/problems/${warmup.slug}` : "/problems"} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-indigo-300/20 bg-indigo-300/10 px-4 py-2.5 text-sm font-semibold text-indigo-100 transition hover:bg-indigo-300/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300">
                 Open challenge <span aria-hidden="true">↗</span>
               </Link>
             </div>

@@ -175,7 +175,6 @@ export async function executeWithJudge0(params: {
       signal: controller.signal,
     });
 
-    clearTimeout(timer);
 
     if (!res.ok) {
       if (res.status === 429) {
@@ -214,6 +213,7 @@ export async function executeWithJudge0(params: {
           {
             method: 'GET',
             headers: getRequestHeaders(config),
+            signal: controller.signal,
           }
         );
 
@@ -221,6 +221,10 @@ export async function executeWithJudge0(params: {
           submission = (await pollRes.json()) as RawJudge0SubmissionResponse;
         }
       }
+    }
+
+    if (!submission.status || submission.status.id < 3) {
+      return { success: false, judge0Available: true, error: 'Execution did not finish before the request deadline. Please try again.' };
     }
 
     // 3. Map status and errors
@@ -247,7 +251,8 @@ export async function executeWithJudge0(params: {
       errorType = 'unknown';
       isError = true;
     } else if (statusId !== 3 && statusId !== 4) {
-      isError = false;
+      isError = true;
+      errorType = 'unknown';
     }
 
     const result: ExecutionResult = {
@@ -270,10 +275,9 @@ export async function executeWithJudge0(params: {
       result,
     };
   } catch (err: unknown) {
-    clearTimeout(timer);
     const message = err instanceof Error ? err.message : String(err);
 
-    if (message.includes('abort') || message.includes('timeout')) {
+    if (controller.signal.aborted || message.includes('abort') || message.includes('timeout')) {
       return {
         success: false,
         judge0Available: true,
@@ -286,5 +290,7 @@ export async function executeWithJudge0(params: {
       judge0Available: false,
       error: `Judge0 execution service unreachable at ${config.baseUrl}: ${message}`,
     };
+  } finally {
+    clearTimeout(timer);
   }
 }

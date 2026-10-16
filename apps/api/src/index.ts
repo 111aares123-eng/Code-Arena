@@ -59,6 +59,8 @@ app.get('/events', (c) =>
       wakeListener?.()
     }
     const unsubscribe = subscribeToActivity((event) => {
+      // Bound memory for slow event-stream consumers.
+      if (pendingEvents.length >= 40) pendingEvents.shift()
       pendingEvents.push(event)
       wake()
     })
@@ -68,32 +70,37 @@ app.get('/events', (c) =>
       wake()
     })
 
-    await stream.writeSSE({
-      event: 'snapshot',
-      data: JSON.stringify(getRecentActivity()),
-    })
+    try {
+      await stream.writeSSE({
+        event: 'snapshot',
+        data: JSON.stringify(getRecentActivity()),
+      })
 
-    while (!stream.aborted) {
-      if (pendingEvents.length === 0) {
-        await new Promise<void>((resolve) => {
-          wakeListener = resolve
-          heartbeatTimer = setTimeout(resolve, 15_000)
-        })
-        wakeListener = undefined
-        if (heartbeatTimer) clearTimeout(heartbeatTimer)
-        heartbeatTimer = undefined
-      }
+      while (!stream.aborted) {
+        if (pendingEvents.length === 0) {
+          await new Promise<void>((resolve) => {
+            wakeListener = resolve
+            heartbeatTimer = setTimeout(resolve, 15_000)
+          })
+          wakeListener = undefined
+          if (heartbeatTimer) clearTimeout(heartbeatTimer)
+          heartbeatTimer = undefined
+        }
 
-      const event = pendingEvents.shift()
-      if (event) {
-        await stream.writeSSE({
-          event: 'activity',
-          id: event.id,
-          data: JSON.stringify(event),
-        })
-      } else if (!stream.aborted) {
-        await stream.write(': keep-alive\n\n')
+        const event = pendingEvents.shift()
+        if (event) {
+          await stream.writeSSE({
+            event: 'activity',
+            id: event.id,
+            data: JSON.stringify(event),
+          })
+        } else if (!stream.aborted) {
+          await stream.write(': keep-alive\n\n')
+        }
       }
+    } finally {
+      unsubscribe()
+      if (heartbeatTimer) clearTimeout(heartbeatTimer)
     }
   })
 )

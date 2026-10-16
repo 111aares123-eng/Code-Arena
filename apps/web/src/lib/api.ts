@@ -1,7 +1,7 @@
 import type { Problem, ProblemDifficulty } from '@code-arena/shared';
 import { getMockProblems, getMockProblemBySlug, getDifficultyStats } from '@code-arena/shared';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/+$/, '');
 
 export interface ProblemListResponse {
   items: Problem[];
@@ -79,12 +79,14 @@ export async function fetchProblems(
       );
     }
 
+    const page = Math.max(1, Math.floor(params.page || 1));
+    const limit = Math.max(1, Math.floor(params.limit || 50));
     return {
-      items,
+      items: items.slice((page - 1) * limit, page * limit),
       total: items.length,
-      page: params.page ?? 1,
-      limit: params.limit ?? 50,
-      totalPages: 1,
+      page,
+      limit,
+      totalPages: Math.ceil(items.length / limit),
       source: 'fallback',
     };
   }
