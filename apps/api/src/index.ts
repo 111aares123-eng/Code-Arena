@@ -29,7 +29,7 @@ export type AppRouter = typeof appRouter
 const app = new Hono()
 
 app.use(
-  '/events',
+  '*',
   cors({
     origin: process.env.WEB_ORIGIN || 'http://localhost:3000',
   })
@@ -46,6 +46,8 @@ app.get('/events', (c) =>
       wakeListener?.()
     }
     const unsubscribe = subscribeToActivity((event) => {
+      // Bound memory for slow event-stream consumers.
+      if (pendingEvents.length >= 40) pendingEvents.shift()
       pendingEvents.push(event)
       wake()
     })
@@ -55,6 +57,7 @@ app.get('/events', (c) =>
       wake()
     })
 
+    try {
     await stream.writeSSE({
       event: 'snapshot',
       data: JSON.stringify(getRecentActivity()),
@@ -81,6 +84,10 @@ app.get('/events', (c) =>
       } else if (!stream.aborted) {
         await stream.write(': keep-alive\n\n')
       }
+    }
+    } finally {
+      unsubscribe()
+      if (heartbeatTimer) clearTimeout(heartbeatTimer)
     }
   })
 )

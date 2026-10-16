@@ -1,11 +1,7 @@
+import { applyPracticePass, normalizeProgress, type PracticeProgress } from './game-rules';
+export type { PracticeProgress } from './game-rules';
 const STORAGE_KEY = 'codearena.practice-progress.v1';
 const PROGRESS_EVENT = 'codearena:practice-progress';
-
-export interface PracticeProgress {
-  xp: number;
-  solvedProblemSlugs: string[];
-  practiceDays: string[];
-}
 
 export const EMPTY_PRACTICE_PROGRESS: PracticeProgress = {
   xp: 0,
@@ -53,16 +49,7 @@ export function readPracticeProgress(): PracticeProgress {
       return cachedProgress;
     }
 
-    const parsed = JSON.parse(stored) as Partial<PracticeProgress>;
-    cachedProgress = {
-      xp: typeof parsed.xp === 'number' && parsed.xp >= 0 ? parsed.xp : 0,
-      solvedProblemSlugs: Array.isArray(parsed.solvedProblemSlugs)
-        ? parsed.solvedProblemSlugs.filter((slug): slug is string => typeof slug === 'string')
-        : [],
-      practiceDays: Array.isArray(parsed.practiceDays)
-        ? parsed.practiceDays.filter((day): day is string => typeof day === 'string')
-        : [],
-    };
+    cachedProgress = normalizeProgress(JSON.parse(stored));
     return cachedProgress;
   } catch {
     cachedStorageValue = undefined;
@@ -73,17 +60,8 @@ export function readPracticeProgress(): PracticeProgress {
 
 export function recordPracticeSamplePassed(problemSlug: string): PracticeProgress {
   const progress = readPracticeProgress();
-  if (progress.solvedProblemSlugs.includes(problemSlug)) return progress;
-
-  const todayDate = new Date();
-  const today = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
-  const nextProgress: PracticeProgress = {
-    xp: progress.xp + 25,
-    solvedProblemSlugs: [...progress.solvedProblemSlugs, problemSlug],
-    practiceDays: progress.practiceDays.includes(today)
-      ? progress.practiceDays
-      : [...progress.practiceDays, today],
-  };
+  const nextProgress = applyPracticePass(progress, problemSlug, getDaySnapshot());
+  if (nextProgress === progress) return progress;
 
   try {
     const serialized = JSON.stringify(nextProgress);
@@ -100,7 +78,7 @@ export function recordPracticeSamplePassed(problemSlug: string): PracticeProgres
 
 export function subscribeToPracticeProgress(onChange: () => void): () => void {
   const onStorage = (event: StorageEvent) => {
-    if (event.key === STORAGE_KEY) onChange();
+    if (event.key === STORAGE_KEY || event.key === null) onChange();
   };
   const onPracticeProgress = () => onChange();
 
