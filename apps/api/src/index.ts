@@ -28,12 +28,25 @@ export type AppRouter = typeof appRouter
 
 const app = new Hono()
 
-app.use(
-  '/events',
-  cors({
-    origin: process.env.WEB_ORIGIN || 'http://localhost:3000',
-  })
+const allowedOrigins = Array.from(
+  new Set([
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+    ...(process.env.WEB_ORIGIN ? [process.env.WEB_ORIGIN] : []),
+  ])
 )
+
+const corsMiddleware = cors({
+  origin: allowedOrigins,
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'trpc-accept', 'Accept'],
+  exposeHeaders: ['Content-Length'],
+  maxAge: 86400,
+})
+
+app.use('/events', corsMiddleware)
 
 app.get('/events', (c) =>
   streamSSE(c, async (stream) => {
@@ -84,6 +97,8 @@ app.get('/events', (c) =>
     }
   })
 )
+
+app.use('/trpc/*', corsMiddleware)
 
 app.use(
   '/trpc/*',

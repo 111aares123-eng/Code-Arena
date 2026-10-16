@@ -9,6 +9,7 @@ export const problemExampleSchema = z.object({
   input: z.string(),
   output: z.string(),
   explanation: z.string().optional(),
+  structuredInput: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const problemStarterCodeSchema = z.record(z.string(), z.string()).optional();

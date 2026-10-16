@@ -7,6 +7,7 @@ export interface ProblemExample {
   input: string;
   output: string;
   explanation?: string;
+  structuredInput?: Record<string, unknown>;
 }
 
 export interface Problem {

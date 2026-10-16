@@ -9,8 +9,8 @@ export const runCodeInputSchema = z.object({
     .min(1, 'Source code cannot be empty')
     .max(65536, 'Source code exceeds maximum permitted size of 64KB'),
   language: executionLanguageSchema,
-  stdin: z.string().optional().default(''),
-  expectedOutput: z.string().optional().default(''),
+  stdin: z.string().optional(),
+  expectedOutput: z.string().optional(),
   testCaseIndex: z.number().int().nonnegative().optional().default(0),
 });
 
