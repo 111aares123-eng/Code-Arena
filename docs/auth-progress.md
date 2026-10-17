@@ -8,6 +8,7 @@
 - Wired the API root and problem, execution, and auth routers to the shared tRPC instance.
 - Passed the adapter-provided request and response headers into the API context.
 - Registered the auth router at the API root.
+- Enabled credentialed CORS while retaining the explicit origin allowlist.
 
 ## Decided
 
@@ -16,5 +17,5 @@
 
 ## Next
 
-- Enable credentialed CORS and production-only secure session cookies.
+- Add the production-only Secure session-cookie attribute.
 - Run the API typecheck and test suite after each remaining task, then commit.
