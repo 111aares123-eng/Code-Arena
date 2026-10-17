@@ -1,6 +1,11 @@
 import Link from 'next/link';
+import { getCurrentUser } from '../lib/auth-server';
+import { LogoutButton } from './logout-button';
 
-export function Navbar() {
+export async function Navbar() {
+  const user = await getCurrentUser();
+  const dashboardHref = user?.role === 'mentor' ? '/admin' : '/dashboard';
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -48,12 +53,36 @@ export function Navbar() {
             <span>Python & C++ Ready</span>
           </div>
 
-          <Link
-            href="/problems"
-            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition-colors"
-          >
-            Enter Arena
-          </Link>
+          {user ? (
+            <>
+              <span className="hidden text-sm text-zinc-300 sm:inline">{user.name}</span>
+              <Link
+                href={dashboardHref}
+                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              >
+                Dashboard
+              </Link>
+              <LogoutButton
+                redirectTo={user.role === 'mentor' ? '/admin/login' : '/login'}
+                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 disabled:opacity-60"
+              />
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
