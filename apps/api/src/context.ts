@@ -1,4 +1,4 @@
-import { getDb, sessions, eq } from '@code-arena/db';
+import { getDb, sessions, users, eq } from '@code-arena/db';
 
 /**
  * tRPC context — populated per-request.
@@ -8,6 +8,7 @@ import { getDb, sessions, eq } from '@code-arena/db';
 export type Context = {
   sessionId: string | null;
   userId: string | null;
+  role: 'learner' | 'mentor' | null;
   resHeaders: Headers;
 };
 
@@ -30,7 +31,7 @@ export async function createContext(req: Request): Promise<Context> {
       ?.trim() ?? null;
 
   if (!sessionId) {
-    return { sessionId: null, userId: null, resHeaders };
+    return { sessionId: null, userId: null, role: null, resHeaders };
   }
 
   // Validate session in the DB
@@ -42,8 +43,18 @@ export async function createContext(req: Request): Promise<Context> {
     .limit(1);
 
   if (!session || session.expiresAt < new Date()) {
-    return { sessionId, userId: null, resHeaders };
+    return { sessionId, userId: null, role: null, resHeaders };
   }
 
-  return { sessionId, userId: session.userId, resHeaders };
+  const [user] = await db
+    .select({ role: users.role })
+    .from(users)
+    .where(eq(users.id, session.userId))
+    .limit(1);
+
+  if (!user) {
+    return { sessionId, userId: null, role: null, resHeaders };
+  }
+
+  return { sessionId, userId: session.userId, role: user.role, resHeaders };
 }
