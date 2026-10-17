@@ -22,13 +22,14 @@ const loginSchema = z.object({
 // ─── Session helpers ──────────────────────────────────────────────────────────
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const secureCookieAttribute = process.env.NODE_ENV === 'production' ? '; Secure' : '';
 
 function makeSessionCookie(sessionId: string): string {
-  return `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${SESSION_TTL_MS / 1000}`;
+  return `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${SESSION_TTL_MS / 1000}${secureCookieAttribute}`;
 }
 
 function clearSessionCookie(): string {
-  return `session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`;
+  return `session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secureCookieAttribute}`;
 }
 
 // ─── Auth Router ──────────────────────────────────────────────────────────────

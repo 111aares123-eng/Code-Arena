@@ -9,6 +9,7 @@
 - Passed the adapter-provided request and response headers into the API context.
 - Registered the auth router at the API root.
 - Enabled credentialed CORS while retaining the explicit origin allowlist.
+- Set the session cookie's Secure attribute only in production.
 
 ## Decided
 
@@ -17,5 +18,5 @@
 
 ## Next
 
-- Add the production-only Secure session-cookie attribute.
+- Verify register, cookie issuance, and `auth.me` against a running API and database.
 - Run the API typecheck and test suite after each remaining task, then commit.
