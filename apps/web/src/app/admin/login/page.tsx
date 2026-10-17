@@ -1,9 +1,10 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { AuthForm } from '../../../components/auth-form';
 import { getCurrentUser } from '../../../lib/auth-server';
 
-export default async function MentorLoginPage() {
+async function MentorLoginPageContent() {
   const user = await getCurrentUser();
   if (user) redirect(user.role === 'mentor' ? '/admin' : '/dashboard');
 
@@ -18,5 +19,13 @@ export default async function MentorLoginPage() {
         <AuthForm mode="login" audience="mentor" />
       </section>
     </main>
+  );
+}
+
+export default function MentorLoginPage() {
+  return (
+    <Suspense fallback={<main className="flex flex-1 items-center justify-center px-4 py-12" />}>
+      <MentorLoginPageContent />
+    </Suspense>
   );
 }

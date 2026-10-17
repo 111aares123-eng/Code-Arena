@@ -1,7 +1,8 @@
+import { Suspense } from 'react';
 import { requireUserRole } from '../../lib/auth-server';
 import { LogoutButton } from '../../components/logout-button';
 
-export default async function DashboardPage() {
+async function DashboardContent() {
   const user = await requireUserRole('learner');
 
   return (
@@ -24,5 +25,13 @@ export default async function DashboardPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<main className="flex-1 px-4 py-10 sm:px-6 lg:px-8" />}>
+      <DashboardContent />
+    </Suspense>
   );
 }

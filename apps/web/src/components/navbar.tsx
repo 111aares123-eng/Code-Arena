@@ -1,15 +1,56 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { getCurrentUser } from '../lib/auth-server';
 import { LogoutButton } from './logout-button';
 
-export async function Navbar() {
+async function AuthActions() {
   const user = await getCurrentUser();
   const dashboardHref = user?.role === 'mentor' ? '/admin' : '/dashboard';
 
   return (
+    <div className="flex items-center gap-3">
+      <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900/60 text-xs text-zinc-400">
+        <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+        <span>Python & C++ Ready</span>
+      </div>
+      {user ? (
+        <>
+          <span className="hidden text-sm text-zinc-300 sm:inline">{user.name}</span>
+          <Link
+            href={dashboardHref}
+            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+          >
+            Dashboard
+          </Link>
+          <LogoutButton
+            redirectTo={user.role === 'mentor' ? '/admin/login' : '/login'}
+            className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 disabled:opacity-60"
+          />
+        </>
+      ) : (
+        <>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/register"
+            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+          >
+            Sign up
+          </Link>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function Navbar() {
+  return (
     <header className="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
@@ -22,8 +63,6 @@ export async function Navbar() {
               <span className="text-[10px] text-zinc-400 tracking-wide font-medium">Competitive Programming</span>
             </div>
           </Link>
-
-          {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-1" aria-label="Main Navigation">
             <Link
               href="/problems"
@@ -45,45 +84,9 @@ export async function Navbar() {
             </Link>
           </nav>
         </div>
-
-        {/* Right Action & Status */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900/60 text-xs text-zinc-400">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Python & C++ Ready</span>
-          </div>
-
-          {user ? (
-            <>
-              <span className="hidden text-sm text-zinc-300 sm:inline">{user.name}</span>
-              <Link
-                href={dashboardHref}
-                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-              >
-                Dashboard
-              </Link>
-              <LogoutButton
-                redirectTo={user.role === 'mentor' ? '/admin/login' : '/login'}
-                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 disabled:opacity-60"
-              />
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-              >
-                Sign up
-              </Link>
-            </>
-          )}
-        </div>
+        <Suspense fallback={<div className="h-9 w-28 animate-pulse rounded-lg bg-zinc-800" aria-hidden="true" />}>
+          <AuthActions />
+        </Suspense>
       </div>
     </header>
   );
