@@ -1,21 +1,9 @@
-import { initTRPC, TRPCError } from '@trpc/server';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { nanoid } from 'nanoid';
 import { getDb, users, sessions, eq } from '@code-arena/db';
-import type { Context } from '../context';
-
-const t = initTRPC.context<Context>().create();
-const router = t.router;
-const publicProcedure = t.procedure;
-
-// Protected procedure — requires a valid session cookie
-const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  if (!ctx.userId) {
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'You must be logged in.' });
-  }
-  return next({ ctx: { ...ctx, userId: ctx.userId } });
-});
+import { protectedProcedure, publicProcedure, router } from '../trpc';
 
 // ─── Input Schemas ────────────────────────────────────────────────────────────
 

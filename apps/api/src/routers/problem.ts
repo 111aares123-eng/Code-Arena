@@ -1,11 +1,8 @@
-import { initTRPC, TRPCError } from '@trpc/server';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { getDb, problems, eq, and, or, ilike, sql, asc } from '@code-arena/db';
 import type { Problem } from '@code-arena/shared';
-
-const t = initTRPC.create();
-export const router = t.router;
-export const publicProcedure = t.procedure;
+import { router, publicProcedure } from '../trpc';
 
 export const problemListInputSchema = z
   .object({

@@ -1,17 +1,14 @@
 import { serve } from '@hono/node-server'
 import { trpcServer } from '@hono/trpc-server'
-import { initTRPC } from '@trpc/server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { streamSSE } from 'hono/streaming'
 
 import { problemRouter } from './routers/problem'
 import { executionRouter } from './routers/execution'
+import { authRouter } from './routers/auth'
 import { getRecentActivity, subscribeToActivity, type ActivityEvent } from './services/activity-feed'
-
-const t = initTRPC.create()
-export const router = t.router
-export const publicProcedure = t.procedure
+import { router, publicProcedure } from './trpc'
 
 export const appRouter = router({
   health: publicProcedure.query(() => {
@@ -22,6 +19,7 @@ export const appRouter = router({
   }),
   problem: problemRouter,
   execution: executionRouter,
+  auth: authRouter,
 })
 
 export type AppRouter = typeof appRouter

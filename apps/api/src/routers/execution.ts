@@ -1,4 +1,4 @@
-import { initTRPC, TRPCError } from '@trpc/server';
+import { TRPCError } from '@trpc/server';
 import {
   runCodeInputSchema,
   submitCodeInputSchema,
@@ -17,10 +17,7 @@ import {
   checkJudge0Health,
   getJudge0Config,
 } from '../services/judge0';
-
-const t = initTRPC.create();
-export const router = t.router;
-export const publicProcedure = t.procedure;
+import { router, publicProcedure } from '../trpc';
 
 async function getProblemForExecution(slug: string) {
   try {
