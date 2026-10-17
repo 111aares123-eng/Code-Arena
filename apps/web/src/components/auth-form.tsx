@@ -19,6 +19,16 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const isRegister = mode === 'register';
+  const isMentor = audience === 'mentor';
+  const focusStyle = isMentor
+    ? 'focus:border-violet-400 focus:ring-violet-500/30'
+    : 'focus:border-indigo-400 focus:ring-indigo-500/30';
+  const linkStyle = isMentor
+    ? 'text-violet-300 hover:text-violet-200'
+    : 'text-indigo-300 hover:text-indigo-200';
+  const buttonStyle = isMentor
+    ? 'bg-violet-600 shadow-violet-600/25 hover:bg-violet-500 focus-visible:outline-violet-300'
+    : 'bg-indigo-600 shadow-indigo-600/25 hover:bg-indigo-500 focus-visible:outline-indigo-300';
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -64,10 +74,10 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="min-w-0 space-y-5">
       {isRegister && (
         <div>
-          <label htmlFor="name" className="mb-2 block text-sm font-medium text-zinc-200">
+          <label htmlFor="name" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
             Full name
           </label>
           <input
@@ -78,13 +88,13 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
             required
             minLength={2}
             maxLength={100}
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30"
+            className={`w-full min-w-0 rounded-xl border border-zinc-700/80 bg-zinc-950/80 px-4 py-3 text-sm text-white outline-none transition-colors focus:ring-2 ${focusStyle}`}
           />
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="mb-2 block text-sm font-medium text-zinc-200">
+        <label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
           Email
         </label>
         <input
@@ -93,12 +103,12 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
           type="email"
           autoComplete="email"
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30"
+          className={`w-full min-w-0 rounded-xl border border-zinc-700/80 bg-zinc-950/80 px-4 py-3 text-sm text-white outline-none transition-colors focus:ring-2 ${focusStyle}`}
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-2 block text-sm font-medium text-zinc-200">
+        <label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
           Password
         </label>
         <input
@@ -108,16 +118,16 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
           autoComplete={isRegister ? 'new-password' : 'current-password'}
           required
           minLength={isRegister ? 8 : undefined}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/30"
+          className={`w-full min-w-0 rounded-xl border border-zinc-700/80 bg-zinc-950/80 px-4 py-3 text-sm text-white outline-none transition-colors focus:ring-2 ${focusStyle}`}
         />
       </div>
 
       {error && (
-        <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3.5 py-3 text-sm text-rose-200" role="alert">
+        <p className="rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm leading-6 text-rose-100" role="alert">
           {error.includes('/admin/login') ? (
             <>
               {error.split('/admin/login')[0]}
-              <Link href="/admin/login" className="font-semibold text-indigo-300 underline underline-offset-2">
+              <Link href="/admin/login" className="font-semibold text-indigo-200 underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300">
                 /admin/login
               </Link>
               {error.split('/admin/login')[1]}
@@ -125,7 +135,7 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
           ) : error.includes('/login') ? (
             <>
               {error.split('/login')[0]}
-              <Link href="/login" className="font-semibold text-indigo-300 underline underline-offset-2">
+              <Link href="/login" className="font-semibold text-indigo-200 underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300">
                 /login
               </Link>
               {error.split('/login')[1]}
@@ -139,20 +149,20 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+        className={`inline-flex min-h-12 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${buttonStyle}`}
       >
         {isSubmitting ? 'Please wait…' : isRegister ? 'Create learner account' : 'Log in'}
       </button>
 
       {audience === 'learner' ? (
-        <p className="text-center text-sm text-zinc-400">
+        <p className="text-center text-sm leading-6 text-zinc-400">
           {isRegister ? 'Already have an account? ' : 'New to CodeArena? '}
-          <Link href={isRegister ? '/login' : '/register'} className="font-medium text-indigo-300 hover:text-indigo-200">
+          <Link href={isRegister ? '/login' : '/register'} className={`font-semibold ${linkStyle} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-300`}>
             {isRegister ? 'Log in' : 'Create a learner account'}
           </Link>
         </p>
       ) : (
-        <p className="text-center text-sm text-zinc-400">
+        <p className="text-center text-sm leading-6 text-zinc-400">
           Mentor accounts are created by invitation from the institution.
         </p>
       )}
