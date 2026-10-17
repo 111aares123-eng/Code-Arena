@@ -31,4 +31,10 @@
 ## Next
 
 - Verify register, cookie issuance, and `auth.me` against a running API and database.
+- Add learner and mentor dashboard placeholder sections and document cookie domain requirements.
+
+## Route protection
+
+- Protected App Router pages validate the HttpOnly session by calling `auth.me` server-side and redirect based on the returned role. Login and registration pages use the same server check to redirect signed-in users.
+- This uses Next.js server-rendered page checks rather than Proxy: the session cookie is opaque and contains no role to check optimistically, while the installed Next.js authentication guide recommends secure checks close to protected pages/data and avoiding database checks in Proxy.
 - Hardening backlog: login rate limiting, including the invite-code endpoint.

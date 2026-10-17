@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { me, type AuthUser } from './auth';
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
@@ -10,4 +11,11 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   } catch {
     return null;
   }
+}
+
+export async function requireUserRole(role: AuthUser['role']): Promise<AuthUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect(role === 'mentor' ? '/admin/login' : '/login');
+  if (user.role !== role) redirect(user.role === 'mentor' ? '/admin' : '/dashboard');
+  return user;
 }
