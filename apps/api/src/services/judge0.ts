@@ -135,6 +135,16 @@ export async function checkJudge0Health(): Promise<{
  * Executes source code via Judge0 CE instance.
  * Handles both synchronous wait=true and polling for queued jobs.
  */
+
+function decodeBase64(val: string | null | undefined): string | null {
+  if (val === null || val === undefined) return null;
+  try {
+    return Buffer.from(val, 'base64').toString('utf8');
+  } catch {
+    return val;
+  }
+}
+
 export async function executeWithJudge0(params: {
   sourceCode: string;
   language: ExecutionLanguage;
@@ -147,9 +157,9 @@ export async function executeWithJudge0(params: {
   const languageId = getJudge0LanguageId(params.language, config);
 
   const payload = {
-    source_code: params.sourceCode,
+    source_code: Buffer.from(params.sourceCode).toString('base64'),
     language_id: languageId,
-    stdin: params.stdin || '',
+    stdin: Buffer.from(params.stdin || '').toString('base64'),
   };
 
   const controller = new AbortController();
@@ -157,7 +167,7 @@ export async function executeWithJudge0(params: {
 
   try {
     // 1. Submit execution request to Judge0
-    const url = `${config.baseUrl}/submissions?base64_encoded=false&wait=true`;
+    const url = `${config.baseUrl}/submissions?base64_encoded=true&wait=true`;
     const res = await fetch(url, {
       method: 'POST',
       headers: getRequestHeaders(config),
@@ -165,7 +175,6 @@ export async function executeWithJudge0(params: {
       signal: controller.signal,
     });
 
-    clearTimeout(timer);
 
     if (!res.ok) {
       if (res.status === 429) {
@@ -200,10 +209,11 @@ export async function executeWithJudge0(params: {
         await new Promise((r) => setTimeout(r, 500));
 
         const pollRes = await fetch(
-          `${config.baseUrl}/submissions/${submission.token}?base64_encoded=false`,
+          `${config.baseUrl}/submissions/${submission.token}?base64_encoded=true`,
           {
             method: 'GET',
             headers: getRequestHeaders(config),
+            signal: controller.signal,
           }
         );
 
@@ -211,6 +221,10 @@ export async function executeWithJudge0(params: {
           submission = (await pollRes.json()) as RawJudge0SubmissionResponse;
         }
       }
+    }
+
+    if (!submission.status || submission.status.id < 3) {
+      return { success: false, judge0Available: true, error: 'Execution did not finish before the request deadline. Please try again.' };
     }
 
     // 3. Map status and errors
@@ -237,14 +251,15 @@ export async function executeWithJudge0(params: {
       errorType = 'unknown';
       isError = true;
     } else if (statusId !== 3 && statusId !== 4) {
-      isError = false;
+      isError = true;
+      errorType = 'unknown';
     }
 
     const result: ExecutionResult = {
-      stdout: submission.stdout ?? null,
-      stderr: submission.stderr ?? null,
-      compileOutput: submission.compile_output ?? null,
-      message: submission.message ?? null,
+      stdout: decodeBase64(submission.stdout),
+      stderr: decodeBase64(submission.stderr),
+      compileOutput: decodeBase64(submission.compile_output),
+      message: decodeBase64(submission.message),
       exitCode: submission.exit_code ?? null,
       exitSignal: submission.exit_signal ?? null,
       time: submission.time ?? null,
@@ -260,10 +275,9 @@ export async function executeWithJudge0(params: {
       result,
     };
   } catch (err: unknown) {
-    clearTimeout(timer);
     const message = err instanceof Error ? err.message : String(err);
 
-    if (message.includes('abort') || message.includes('timeout')) {
+    if (controller.signal.aborted || message.includes('abort') || message.includes('timeout')) {
       return {
         success: false,
         judge0Available: true,
@@ -276,5 +290,7 @@ export async function executeWithJudge0(params: {
       judge0Available: false,
       error: `Judge0 execution service unreachable at ${config.baseUrl}: ${message}`,
     };
+  } finally {
+    clearTimeout(timer);
   }
 }

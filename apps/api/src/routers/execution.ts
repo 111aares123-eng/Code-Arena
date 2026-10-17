@@ -10,6 +10,7 @@ import {
 import { getDb, problems, eq, and } from '@code-arena/db';
 import { getMockProblemBySlug } from '@code-arena/shared';
 import { publishPracticeSamplePassed } from '../services/activity-feed';
+import { buildExecutionHarness } from '../services/harness';
 import {
   executeWithJudge0,
   compareOutputs,
@@ -74,15 +75,28 @@ export const executionRouter = router({
     const testCaseIndex = input.testCaseIndex ?? 0;
     const sampleExample = problem.examples[testCaseIndex] ?? problem.examples[0];
 
-    const stdinToUse = input.stdin ? input.stdin : sampleExample?.input || '';
-    const expectedOutputToUse = input.expectedOutput
-      ? input.expectedOutput
-      : sampleExample?.output || '';
+    const stdinToUse: string = typeof input.stdin === 'string' ? input.stdin : (sampleExample?.input ?? '');
+    const hasExplicitStdin = typeof input.stdin === 'string';
+    const expectedOutputToUse: string =
+      typeof input.expectedOutput === 'string' ? input.expectedOutput : (sampleExample?.output ?? '');
+
+    // If explicit stdin is given and differs from sample input, run as custom standalone IO
+    const isCustomRun = hasExplicitStdin && input.stdin !== sampleExample?.input;
+
+    const harnessResult = !isCustomRun
+      ? buildExecutionHarness({
+          problemSlug: problem.slug,
+          language: input.language,
+          sourceCode: input.sourceCode,
+          structuredInput: sampleExample?.structuredInput,
+          rawInput: sampleExample?.input,
+        })
+      : { code: input.sourceCode, wasHarnessed: false };
 
     const execution = await executeWithJudge0({
-      sourceCode: input.sourceCode,
+      sourceCode: harnessResult.code,
       language: input.language,
-      stdin: stdinToUse,
+      stdin: harnessResult.wasHarnessed ? '' : stdinToUse,
     });
 
     const executedAt = new Date().toISOString();
@@ -168,10 +182,19 @@ export const executionRouter = router({
 
       for (let i = 0; i < examples.length; i++) {
         const example = examples[i];
-        const execution = await executeWithJudge0({
-          sourceCode: input.sourceCode,
+
+        const harnessResult = buildExecutionHarness({
+          problemSlug: problem.slug,
           language: input.language,
-          stdin: example.input,
+          sourceCode: input.sourceCode,
+          structuredInput: example.structuredInput,
+          rawInput: example.input,
+        });
+
+        const execution = await executeWithJudge0({
+          sourceCode: harnessResult.code,
+          language: input.language,
+          stdin: harnessResult.wasHarnessed ? '' : example.input,
         });
 
         if (!execution.success) {

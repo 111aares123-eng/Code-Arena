@@ -59,3 +59,6 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# Share configuration templates, never local credentials.
+!.env.example

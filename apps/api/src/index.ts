@@ -28,12 +28,25 @@ export type AppRouter = typeof appRouter
 
 const app = new Hono()
 
-app.use(
-  '/events',
-  cors({
-    origin: process.env.WEB_ORIGIN || 'http://localhost:3000',
-  })
+const allowedOrigins = Array.from(
+  new Set([
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+    ...(process.env.WEB_ORIGIN ? [process.env.WEB_ORIGIN] : []),
+  ])
 )
+
+const corsMiddleware = cors({
+  origin: allowedOrigins,
+  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'trpc-accept', 'Accept'],
+  exposeHeaders: ['Content-Length'],
+  maxAge: 86400,
+})
+
+app.use('/events', corsMiddleware)
 
 app.get('/events', (c) =>
   streamSSE(c, async (stream) => {
@@ -46,6 +59,8 @@ app.get('/events', (c) =>
       wakeListener?.()
     }
     const unsubscribe = subscribeToActivity((event) => {
+      // Bound memory for slow event-stream consumers.
+      if (pendingEvents.length >= 40) pendingEvents.shift()
       pendingEvents.push(event)
       wake()
     })
@@ -55,35 +70,42 @@ app.get('/events', (c) =>
       wake()
     })
 
-    await stream.writeSSE({
-      event: 'snapshot',
-      data: JSON.stringify(getRecentActivity()),
-    })
+    try {
+      await stream.writeSSE({
+        event: 'snapshot',
+        data: JSON.stringify(getRecentActivity()),
+      })
 
-    while (!stream.aborted) {
-      if (pendingEvents.length === 0) {
-        await new Promise<void>((resolve) => {
-          wakeListener = resolve
-          heartbeatTimer = setTimeout(resolve, 15_000)
-        })
-        wakeListener = undefined
-        if (heartbeatTimer) clearTimeout(heartbeatTimer)
-        heartbeatTimer = undefined
-      }
+      while (!stream.aborted) {
+        if (pendingEvents.length === 0) {
+          await new Promise<void>((resolve) => {
+            wakeListener = resolve
+            heartbeatTimer = setTimeout(resolve, 15_000)
+          })
+          wakeListener = undefined
+          if (heartbeatTimer) clearTimeout(heartbeatTimer)
+          heartbeatTimer = undefined
+        }
 
-      const event = pendingEvents.shift()
-      if (event) {
-        await stream.writeSSE({
-          event: 'activity',
-          id: event.id,
-          data: JSON.stringify(event),
-        })
-      } else if (!stream.aborted) {
-        await stream.write(': keep-alive\n\n')
+        const event = pendingEvents.shift()
+        if (event) {
+          await stream.writeSSE({
+            event: 'activity',
+            id: event.id,
+            data: JSON.stringify(event),
+          })
+        } else if (!stream.aborted) {
+          await stream.write(': keep-alive\n\n')
+        }
       }
+    } finally {
+      unsubscribe()
+      if (heartbeatTimer) clearTimeout(heartbeatTimer)
     }
   })
 )
+
+app.use('/trpc/*', corsMiddleware)
 
 app.use(
   '/trpc/*',
