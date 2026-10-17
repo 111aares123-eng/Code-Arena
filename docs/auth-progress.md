@@ -15,6 +15,9 @@
 - Registration, login, and mentor creation trim and lowercase email addresses before use.
 - Auth user IDs use `crypto.randomUUID()` and sessions use 32 random bytes encoded as base64url.
 - Removed the unused `nanoid` and `@types/bcryptjs` API dependencies and regenerated the lockfile.
+- Added public `auth.registerMentor`, gated by `MENTOR_INVITE_CODE` with constant-time digest comparison.
+- Documented the invite-code environment variable in `apps/api/.env.example`.
+- Added focused tests for enabled/disabled invite codes, duplicate emails, learner-only registration, session cookies, and mentor profile lookup.
 
 ## Decided
 
@@ -23,7 +26,9 @@
 - Zod v4 object schemas strip unrecognized keys by default; a supplied registration `role` is ignored.
 - Mentor account creation requires `MENTOR_NAME`, `MENTOR_EMAIL`, and `MENTOR_PASSWORD` from the root environment file.
 - Email normalization is consistently trim + lowercase in all account creation and login flows.
+- Mentor signup checks the configured invite code before any database access; unset or short secrets disable the procedure. Both invite strings are SHA-256 hashed before constant-time comparison.
 
 ## Next
 
 - Verify register, cookie issuance, and `auth.me` against a running API and database.
+- Hardening backlog: login rate limiting, including the invite-code endpoint.
