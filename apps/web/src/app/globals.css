@@ -81,6 +81,12 @@ body {
   50% { opacity: 0.65; }
 }
 
+@keyframes ca-tile-sweep {
+  0%, 70%, 100% { transform: translateX(-130%); opacity: 0; }
+  78% { opacity: 0.18; }
+  92% { transform: translateX(130%); opacity: 0; }
+}
+
 .ca-aurora {
   animation: ca-aurora-drift 24s ease-in-out infinite;
 }
@@ -164,6 +170,30 @@ body {
   box-shadow: 0 0 22px rgb(124 58 237 / 0.24);
 }
 
+.ca-tile-sweep {
+  transition: transform 240ms ease;
+}
+
+.ca-tile-sweep::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  background: linear-gradient(100deg, transparent, rgb(129 140 248 / 0.08), transparent);
+  content: "";
+  pointer-events: none;
+  animation: ca-tile-sweep 9s ease-in-out infinite;
+}
+
+.ca-tile-sweep-mentor::after {
+  background: linear-gradient(100deg, transparent, rgb(167 139 250 / 0.07), transparent);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .ca-tile-sweep:hover {
+    transform: translateY(-3px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ca-aurora,
   .ca-shimmer-text,
@@ -179,6 +209,10 @@ body {
   .ca-button-glow::after,
   .ca-tile-sweep::after {
     animation: none !important;
+  }
+
+  .ca-tile-sweep {
+    transition: none !important;
   }
 
   .ca-typing {

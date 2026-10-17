@@ -58,9 +58,17 @@ export function DashboardShell({
     <main className="relative flex-1 overflow-hidden px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div className={`pointer-events-none absolute inset-x-0 top-0 h-96 bg-gradient-to-b ${styles.glow} to-transparent`} aria-hidden="true" />
       <div className="relative mx-auto max-w-5xl">
-        <header className="mb-7 sm:mb-9">
+        <header className="relative isolate mb-7 sm:mb-9">
+          <div className="pointer-events-none absolute inset-x-0 -top-10 -z-10 h-48 overflow-hidden" aria-hidden="true">
+            <div className={`ca-aurora absolute -left-12 -top-8 h-44 w-44 rounded-full blur-3xl ${tone === 'mentor' ? 'bg-violet-500/10' : 'bg-indigo-500/10'}`} />
+            <div className={`ca-aurora absolute right-1/4 top-0 h-40 w-40 rounded-full blur-3xl ${tone === 'mentor' ? 'bg-fuchsia-500/5' : 'bg-violet-500/10'}`} />
+            {tone === 'learner' && (
+              <div className="ca-aurora absolute -right-8 top-4 h-36 w-36 rounded-full bg-pink-400/5 blur-3xl" />
+            )}
+          </div>
+          <div className="relative">
           <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] ${styles.kicker}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} aria-hidden="true" />
+            <span className={`ca-status-ping h-1.5 w-1.5 rounded-full ${styles.dot}`} aria-hidden="true" />
             {kicker}
           </div>
           <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
@@ -69,6 +77,7 @@ export function DashboardShell({
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
             Your CodeArena profile and workspace.
           </p>
+          </div>
         </header>
 
         <section className="flex min-w-0 flex-col gap-5 rounded-3xl border border-white/[0.09] bg-gradient-to-br from-[#111827] via-zinc-900 to-zinc-950 p-5 shadow-xl shadow-black/20 sm:flex-row sm:items-center sm:justify-between sm:p-7">
@@ -92,7 +101,7 @@ export function DashboardShell({
 
         <section className={`mt-6 grid min-w-0 gap-4 ${sections.length === 3 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2'}`} aria-label="Coming soon dashboard sections">
           {sections.map((section) => (
-            <article key={section.title} className="group relative min-w-0 overflow-hidden rounded-3xl border border-dashed border-zinc-700/90 bg-[#111827]/75 p-5 sm:p-6">
+            <article key={section.title} className={`ca-tile-sweep group relative min-w-0 overflow-hidden rounded-3xl border border-dashed border-zinc-700/90 bg-[#111827]/75 p-5 sm:p-6 ${tone === 'mentor' ? 'ca-tile-sweep-mentor' : ''}`}>
               <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${styles.glow} to-transparent opacity-60`} aria-hidden="true" />
               <div className="relative">
                 <div className="flex items-start justify-between gap-3">
