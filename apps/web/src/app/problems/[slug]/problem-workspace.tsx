@@ -139,7 +139,7 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
       });
 
       setLastSubmitResult(res);
-      if (res.verdict === 'SAMPLE_PASSED') {
+      if (res.verdict === 'SAMPLE_PASSED' || res.verdict === 'ACCEPTED') {
         recordPracticeSamplePassed(problem.slug);
       }
     } catch (err: unknown) {

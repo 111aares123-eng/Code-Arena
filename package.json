@@ -11,6 +11,7 @@
     "db:push": "pnpm --filter @code-arena/db push",
     "db:studio": "pnpm --filter @code-arena/db studio",
     "db:seed": "pnpm --filter @code-arena/db seed",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:api": "pnpm --filter api test"
   }
 }

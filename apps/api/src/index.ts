@@ -7,9 +7,11 @@ import { streamSSE } from 'hono/streaming'
 
 import { problemRouter } from './routers/problem'
 import { executionRouter } from './routers/execution'
+import { testCaseAdminRouter } from './routers/test-case-admin'
+import { createApiContext, type ApiContext } from './context'
 import { getRecentActivity, subscribeToActivity, type ActivityEvent } from './services/activity-feed'
 
-const t = initTRPC.create()
+const t = initTRPC.context<ApiContext>().create()
 export const router = t.router
 export const publicProcedure = t.procedure
 
@@ -22,6 +24,7 @@ export const appRouter = router({
   }),
   problem: problemRouter,
   execution: executionRouter,
+  testCaseAdmin: testCaseAdminRouter,
 })
 
 export type AppRouter = typeof appRouter
@@ -111,6 +114,7 @@ app.use(
   '/trpc/*',
   trpcServer({
     router: appRouter,
+    createContext: (_opts, c) => createApiContext(c.req.raw),
   })
 )
 
