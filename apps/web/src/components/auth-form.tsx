@@ -74,7 +74,7 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="min-w-0 space-y-5">
+    <form onSubmit={handleSubmit} className="ca-enter ca-enter-4 min-w-0 space-y-5">
       {isRegister && (
         <div>
           <label htmlFor="name" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-300">

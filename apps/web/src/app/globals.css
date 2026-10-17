@@ -41,6 +41,129 @@ body {
   mask-image: linear-gradient(to right, black, transparent 78%);
 }
 
+@keyframes ca-aurora-drift {
+  0%, 100% { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.65; }
+  50% { transform: translate3d(2%, 3%, 0) scale(1.06); opacity: 1; }
+}
+
+@keyframes ca-heading-shimmer {
+  0%, 100% { transform: translateX(-3%); opacity: 0.12; }
+  50% { transform: translateX(3%); opacity: 0.38; }
+}
+
+@keyframes ca-glyph-float {
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.26; }
+  50% { transform: translate3d(0, -9px, 0); opacity: 0.5; }
+}
+
+@keyframes ca-enter {
+  from { transform: translate3d(0, 10px, 0); opacity: 0; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@keyframes ca-cursor-blink {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
+@keyframes ca-typing {
+  from { width: 0; }
+  to { width: 16ch; }
+}
+
+@keyframes ca-status-ping {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.35); opacity: 0.55; }
+}
+
+.ca-aurora {
+  animation: ca-aurora-drift 24s ease-in-out infinite;
+}
+
+.ca-shimmer-text {
+  position: relative;
+  isolation: isolate;
+}
+
+.ca-shimmer-text::after {
+  position: absolute;
+  inset: 0;
+  content: attr(data-text);
+  pointer-events: none;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background-image: inherit;
+  background-clip: text;
+  -webkit-background-clip: text;
+  opacity: 0;
+  animation: ca-heading-shimmer 9s ease-in-out infinite;
+}
+
+.ca-glyph {
+  animation: ca-glyph-float 7s ease-in-out infinite;
+}
+
+.ca-enter {
+  animation: ca-enter 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.ca-enter-1 { animation-delay: 80ms; }
+.ca-enter-2 { animation-delay: 170ms; }
+.ca-enter-3 { animation-delay: 260ms; }
+.ca-enter-4 { animation-delay: 350ms; }
+
+.ca-benefit-list li:nth-child(1) { animation-delay: 340ms; }
+.ca-benefit-list li:nth-child(2) { animation-delay: 430ms; }
+.ca-benefit-list li:nth-child(3) { animation-delay: 520ms; }
+
+.ca-glyph:nth-child(2n) { animation-delay: -2s; }
+.ca-glyph:nth-child(3n) { animation-delay: -4s; }
+
+.ca-cursor {
+  animation: ca-cursor-blink 1s steps(2, start) infinite;
+}
+
+.ca-typing {
+  position: relative;
+  width: 16ch;
+  animation: ca-typing 1.7s steps(16, end) both;
+}
+
+.ca-typing::after {
+  position: absolute;
+  top: 0;
+  right: -0.7ch;
+  width: 1px;
+  height: 1.2em;
+  background-color: currentColor;
+  content: "";
+  animation: ca-cursor-blink 1s steps(2, start) infinite;
+}
+
+.ca-status-ping {
+  animation: ca-status-ping 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ca-aurora,
+  .ca-shimmer-text,
+  .ca-shimmer-text::after,
+  .ca-glyph,
+  .ca-enter,
+  .ca-cursor,
+  .ca-typing,
+  .ca-status-ping,
+  .ca-button-glow,
+  .ca-button-glow::after,
+  .ca-tile-sweep::after {
+    animation: none !important;
+  }
+
+  .ca-typing {
+    width: 16ch;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
