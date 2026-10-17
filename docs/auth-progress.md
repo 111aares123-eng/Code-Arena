@@ -36,7 +36,7 @@
 
 - Added learner login and registration pages plus a public mentor login page; mentor self-registration is not offered.
 - Navbar shows registration/login links when signed out and account/dashboard/logout controls when signed in.
-- Learner and mentor dashboards show the authenticated profile and empty, “Coming soon” sections without sample metrics or submissions data.
+- Learner and mentor dashboards show the authenticated profile and empty "Coming soon" sections without sample metrics or submissions data.
 - Both login pages check the logged-in account role, log out mismatches, and direct the user to the correct login page.
 
 ## Route protection

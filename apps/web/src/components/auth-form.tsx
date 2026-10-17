@@ -42,6 +42,7 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
         const correctLogin = result.user.role === 'mentor' ? '/admin/login' : '/login';
         try {
           await logout();
+          router.refresh();
           setError(
             `This account is for ${result.user.role}s. You have been logged out; sign in at ${correctLogin} instead.`
           );
