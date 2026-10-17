@@ -19,4 +19,3 @@
 ## Next
 
 - Verify register, cookie issuance, and `auth.me` against a running API and database.
-- Run the API typecheck and test suite after each remaining task, then commit.
