@@ -149,7 +149,7 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className={`inline-flex min-h-12 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${buttonStyle}`}
+        className={`ca-button-glow ${isMentor ? 'ca-button-glow-mentor' : ''} relative isolate inline-flex min-h-12 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${buttonStyle}`}
       >
         {isSubmitting ? 'Please wait…' : isRegister ? 'Create learner account' : 'Log in'}
       </button>

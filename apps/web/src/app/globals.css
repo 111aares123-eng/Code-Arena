@@ -76,6 +76,11 @@ body {
   50% { transform: scale(1.35); opacity: 0.55; }
 }
 
+@keyframes ca-button-glow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.65; }
+}
+
 .ca-aurora {
   animation: ca-aurora-drift 24s ease-in-out infinite;
 }
@@ -144,6 +149,21 @@ body {
   animation: ca-status-ping 2.6s ease-in-out infinite;
 }
 
+.ca-button-glow::after {
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 22px rgb(79 70 229 / 0.28);
+  content: "";
+  pointer-events: none;
+  animation: ca-button-glow 3.4s ease-in-out infinite;
+}
+
+.ca-button-glow-mentor::after {
+  box-shadow: 0 0 22px rgb(124 58 237 / 0.24);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ca-aurora,
   .ca-shimmer-text,
@@ -151,8 +171,10 @@ body {
   .ca-glyph,
   .ca-enter,
   .ca-cursor,
+  .ca-typing::after,
   .ca-typing,
   .ca-status-ping,
+  .ca-button-glow::after,
   .ca-button-glow,
   .ca-button-glow::after,
   .ca-tile-sweep::after {
