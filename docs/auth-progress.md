@@ -31,11 +31,21 @@
 ## Next
 
 - Verify register, cookie issuance, and `auth.me` against a running API and database.
-- Add learner and mentor dashboard placeholder sections and document cookie domain requirements.
+
+## Frontend auth
+
+- Added learner login and registration pages plus a public mentor login page; mentor self-registration is not offered.
+- Navbar shows registration/login links when signed out and account/dashboard/logout controls when signed in.
+- Learner and mentor dashboards show the authenticated profile and empty, “Coming soon” sections without sample metrics or submissions data.
+- Both login pages check the logged-in account role, log out mismatches, and direct the user to the correct login page.
 
 ## Route protection
 
 - Protected App Router pages validate the HttpOnly session by calling `auth.me` server-side and redirect based on the returned role. Login and registration pages use the same server check to redirect signed-in users.
 - This uses Next.js server-rendered page checks rather than Proxy: the session cookie is opaque and contains no role to check optimistically, while the installed Next.js authentication guide recommends secure checks close to protected pages/data and avoiding database checks in Proxy.
 - Navbar authentication state is rendered server-side from the same `auth.me` session lookup; signing out calls the API and refreshes navigation.
+
+## Deployment note
+
+- In production, deploy the web app and API under the same parent domain so the API's HttpOnly `session` cookie is available to both browser requests and server-side session checks.
 - Hardening backlog: login rate limiting, including the invite-code endpoint.
