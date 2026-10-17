@@ -6,6 +6,7 @@
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "dev:api": "pnpm --filter api dev",
+    "create-mentor": "pnpm --filter api create-mentor",
     "db:generate": "pnpm --filter @code-arena/db generate",
     "db:migrate": "pnpm --filter @code-arena/db migrate",
     "db:push": "pnpm --filter @code-arena/db push",

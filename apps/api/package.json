@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=../../.env src/index.ts",
+    "create-mentor": "tsx --env-file-if-exists=../../.env src/scripts/create-mentor.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
