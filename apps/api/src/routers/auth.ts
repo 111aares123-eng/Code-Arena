@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { randomBytes, randomUUID } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { nanoid } from 'nanoid';
 import { getDb, users, sessions, eq } from '@code-arena/db';
 import { protectedProcedure, publicProcedure, router } from '../trpc';
 
@@ -51,7 +51,7 @@ export const authRouter = router({
     const passwordHash = await bcrypt.hash(input.password, 12);
 
     // Create user
-    const userId = `usr_${nanoid(20)}`;
+    const userId = `usr_${randomUUID()}`;
     const [user] = await db
       .insert(users)
       .values({
@@ -69,7 +69,7 @@ export const authRouter = router({
       });
 
     // Create session
-    const sessionId = `ses_${nanoid(40)}`;
+    const sessionId = `ses_${randomBytes(32).toString('base64url')}`;
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
     await db.insert(sessions).values({ id: sessionId, userId: user.id, expiresAt });
 
@@ -98,7 +98,7 @@ export const authRouter = router({
     }
 
     // Create new session
-    const sessionId = `ses_${nanoid(40)}`;
+    const sessionId = `ses_${randomBytes(32).toString('base64url')}`;
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
     await db.insert(sessions).values({ id: sessionId, userId: user.id, expiresAt });
 
