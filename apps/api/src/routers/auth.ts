@@ -11,7 +11,6 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['learner', 'mentor']).default('learner'),
 });
 
 const loginSchema = z.object({
@@ -37,7 +36,7 @@ function clearSessionCookie(): string {
 export const authRouter = router({
   /**
    * POST /trpc/auth.register
-   * Create a new learner or mentor account.
+   * Create a new learner account.
    */
   register: publicProcedure.input(registerSchema).mutation(async ({ input, ctx }) => {
     const db = getDb();
@@ -60,7 +59,7 @@ export const authRouter = router({
         name: input.name,
         email: input.email,
         passwordHash,
-        role: input.role,
+        role: 'learner',
       })
       .returning({
         id: users.id,

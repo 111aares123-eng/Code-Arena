@@ -10,12 +10,15 @@
 - Registered the auth router at the API root.
 - Enabled credentialed CORS while retaining the explicit origin allowlist.
 - Set the session cookie's Secure attribute only in production.
+- Public registration accepts no role field and always stores new accounts as learners.
 
 ## Decided
 
 - Anonymous and invalid sessions use `role: null`.
 - Mentor procedures require an authenticated session and the `mentor` role.
+- Zod v4 object schemas strip unrecognized keys by default; a supplied registration `role` is ignored.
 
 ## Next
 
+- Add the environment-configured mentor creation script.
 - Verify register, cookie issuance, and `auth.me` against a running API and database.
