@@ -38,6 +38,7 @@
 - Navbar shows registration/login links when signed out and account/dashboard/logout controls when signed in.
 - Learner and mentor dashboards show the authenticated profile and empty "Coming soon" sections without sample metrics or submissions data.
 - Both login pages check the logged-in account role, log out mismatches, and direct the user to the correct login page.
+- Restyled learner and mentor auth pages and placeholder dashboards to match CodeArena's dark indigo/violet visual language, with responsive layouts, profile initials, and locked "Coming soon" tiles.
 
 ## Route protection
 
