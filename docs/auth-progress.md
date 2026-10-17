@@ -14,6 +14,7 @@
 - Added a mentor creation script configured only through environment variables; existing accounts are never overwritten.
 - Registration, login, and mentor creation trim and lowercase email addresses before use.
 - Auth user IDs use `crypto.randomUUID()` and sessions use 32 random bytes encoded as base64url.
+- Removed the unused `nanoid` and `@types/bcryptjs` API dependencies and regenerated the lockfile.
 
 ## Decided
 
@@ -25,5 +26,4 @@
 
 ## Next
 
-- Remove unused nanoid and bcrypt type-stub dependency entries and refresh the lockfile.
 - Verify register, cookie issuance, and `auth.me` against a running API and database.
