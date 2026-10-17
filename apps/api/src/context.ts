@@ -1,4 +1,5 @@
 import { getDb, sessions, users, eq } from '@code-arena/db';
+import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 
 /**
  * tRPC context — populated per-request.
@@ -13,12 +14,11 @@ export type Context = {
 };
 
 /**
- * Build the tRPC context from the raw Hono request.
+ * Build the tRPC context from the fetch adapter's request options.
  * Reads the `session` cookie, validates it against the DB, and
- * attaches the userId if the session is valid and not expired.
+ * attaches user identity if the session is valid and not expired.
  */
-export async function createContext(req: Request): Promise<Context> {
-  const resHeaders = new Headers();
+export async function createContext({ req, resHeaders }: FetchCreateContextFnOptions): Promise<Context> {
   const cookieHeader = req.headers.get('cookie') ?? '';
 
   // Parse the session cookie

@@ -9,6 +9,7 @@ import { executionRouter } from './routers/execution'
 import { authRouter } from './routers/auth'
 import { getRecentActivity, subscribeToActivity, type ActivityEvent } from './services/activity-feed'
 import { router, publicProcedure } from './trpc'
+import { createContext } from './context'
 
 export const appRouter = router({
   health: publicProcedure.query(() => {
@@ -109,6 +110,7 @@ app.use(
   '/trpc/*',
   trpcServer({
     router: appRouter,
+    createContext,
   })
 )
 
