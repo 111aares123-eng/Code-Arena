@@ -1,30 +1,22 @@
 import { Suspense } from 'react';
 import { requireUserRole } from '../../lib/auth-server';
-import { LogoutButton } from '../../components/logout-button';
+import { DashboardShell } from '../../components/dashboard-shell';
 
 async function AdminDashboardContent() {
   const user = await requireUserRole('mentor');
 
   return (
-    <main className="flex-1 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 sm:p-8">
-          <p className="text-sm font-medium text-indigo-300">Mentor dashboard</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Welcome, {user.name}</h1>
-          <p className="mt-2 text-sm text-zinc-400">{user.email}</p>
-          <p className="mt-1 text-xs capitalize text-zinc-500">Role: {user.role}</p>
-          <LogoutButton redirectTo="/admin/login" className="mt-5 rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 disabled:opacity-60" />
-        </section>
-        <section className="mt-8 grid gap-4 sm:grid-cols-2">
-          {['My students', 'My contests'].map((title) => (
-            <article key={title} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
-              <h2 className="text-base font-semibold text-white">{title}</h2>
-              <p className="mt-3 text-sm text-zinc-400">Coming soon</p>
-            </article>
-          ))}
-        </section>
-      </div>
-    </main>
+    <DashboardShell
+      user={user}
+      kicker="MENTOR CONSOLE"
+      heading="Welcome back"
+      redirectTo="/admin/login"
+      tone="mentor"
+      sections={[
+        { title: 'My students', description: 'Your student roster and connections will appear here.' },
+        { title: 'My contests', description: 'Contests you create or participate in will appear here.' },
+      ]}
+    />
   );
 }
 
