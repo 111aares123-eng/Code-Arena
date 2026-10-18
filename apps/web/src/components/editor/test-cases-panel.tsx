@@ -272,7 +272,7 @@ export function TestCasesPanel({
               {lastSubmitResult && !isSubmitting && (
                 <div
                   className={`p-3.5 rounded-lg border leading-relaxed ${
-                    lastSubmitResult.verdict === 'SAMPLE_PASSED'
+                    lastSubmitResult.verdict === 'ACCEPTED' || lastSubmitResult.verdict === 'SAMPLE_PASSED'
                       ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
                       : lastSubmitResult.verdict === 'SERVICE_UNAVAILABLE'
                       ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
@@ -281,7 +281,9 @@ export function TestCasesPanel({
                 >
                   <div className="flex items-center justify-between font-bold text-sm mb-1">
                     <span>
-                      {lastSubmitResult.verdict === 'SAMPLE_PASSED'
+                      {lastSubmitResult.verdict === 'ACCEPTED'
+                        ? '🎉 ACCEPTED'
+                        : lastSubmitResult.verdict === 'SAMPLE_PASSED'
                         ? '🎉 ALL SAMPLE TEST CASES PASSED'
                         : lastSubmitResult.verdict === 'SERVICE_UNAVAILABLE'
                         ? '⚠️ EXECUTION SERVICE UNAVAILABLE'
@@ -292,6 +294,26 @@ export function TestCasesPanel({
                     </span>
                   </div>
                   <p className="text-[11px] opacity-90">{lastSubmitResult.summary}</p>
+                  <p className="mt-1 text-[11px] font-medium text-white/90" aria-live="polite">
+                    {lastSubmitResult.verdict === 'ACCEPTED'
+                      ? 'Outstanding! Your solution passed all visible and hidden test cases.'
+                      : lastSubmitResult.verdict === 'SAMPLE_PASSED'
+                      ? 'Nice work. The samples are clear, and your practice profile just got a little stronger.'
+                      : lastSubmitResult.verdict === 'SERVICE_UNAVAILABLE'
+                      ? 'The judge is catching its breath. Your code was not scored, so try again in a moment.'
+                      : lastSubmitResult.verdict === 'COMPILE_ERROR'
+                      ? 'The compiler found something to work through. Start with the first compiler message.'
+                      : lastSubmitResult.verdict === 'RUNTIME_ERROR'
+                      ? 'Your code started, then hit a runtime error. Check the failing sample and error output.'
+                      : lastSubmitResult.verdict === 'TIME_LIMIT_EXCEEDED'
+                      ? 'Your solution is still thinking. Check the loop complexity and look for repeated work.'
+                      : 'Close, but not there yet. Check the test case outcomes and trace your logic.'}
+                  </p>
+                  {lastSubmitResult.hiddenCases && (
+                    <div className="mt-2 text-[11px] text-zinc-400 font-mono">
+                      Hidden Test Cases: {lastSubmitResult.hiddenCases.passed}/{lastSubmitResult.hiddenCases.total} Passed
+                    </div>
+                  )}
                   <p className="text-[10px] mt-2 pt-1 border-t border-current/20 opacity-80">
                     {lastSubmitResult.disclaimer}
                   </p>

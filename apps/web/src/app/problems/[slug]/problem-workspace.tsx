@@ -12,6 +12,7 @@ import {
 } from '../../../components/editor/types';
 import { TestCasesPanel } from '../../../components/editor/test-cases-panel';
 import { runCode, submitCode } from '../../../lib/api';
+import { recordPracticeSamplePassed } from '../../../lib/arena-progress';
 
 const MonacoCodeEditor = dynamic(
   () =>
@@ -138,6 +139,9 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
       });
 
       setLastSubmitResult(res);
+      if (res.verdict === 'SAMPLE_PASSED' || res.verdict === 'ACCEPTED') {
+        recordPracticeSamplePassed(problem.slug);
+      }
     } catch (err: unknown) {
       setLastSubmitResult({
         success: false,

@@ -2,21 +2,26 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import {
   runCodeInputSchema,
   submitCodeInputSchema,
+  type ExecutionTestCase,
   type RunCodeResponse,
   type SubmitCodeResponse,
   type TestCaseEvaluation,
-  type SubmissionVerdict,
 } from '@code-arena/shared';
 import { getDb, problems, eq, and } from '@code-arena/db';
 import { getMockProblemBySlug } from '@code-arena/shared';
+import type { ApiContext } from '../context';
+import { publishPracticeSamplePassed } from '../services/activity-feed';
+import { evaluateSubmission, fullEvaluationDisclaimer, SAMPLE_ONLY_DISCLAIMER } from '../services/evaluation';
+import { buildExecutionHarness } from '../services/harness';
 import {
   executeWithJudge0,
   compareOutputs,
   checkJudge0Health,
   getJudge0Config,
 } from '../services/judge0';
+import { dbTestCaseStore, isMissingTestCasesTable } from '../services/test-case-store';
 
-const t = initTRPC.create();
+const t = initTRPC.context<ApiContext>().create();
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
@@ -30,14 +35,14 @@ async function getProblemForExecution(slug: string) {
       .limit(1);
 
     if (rows[0]) {
-      return rows[0];
+      return { problem: rows[0], fromDatabase: true as const };
     }
   } catch (err) {
     console.warn(`[Execution] Database lookup failed for slug "${slug}", checking mock fallback:`, err);
   }
 
   const fallback = getMockProblemBySlug(slug);
-  return fallback || null;
+  return fallback ? { problem: fallback, fromDatabase: false as const } : null;
 }
 
 export const executionRouter = router({
@@ -62,26 +67,41 @@ export const executionRouter = router({
    * Runs code against a single sample test case or custom input via Judge0 CE.
    */
   run: publicProcedure.input(runCodeInputSchema).mutation(async ({ input }): Promise<RunCodeResponse> => {
-    const problem = await getProblemForExecution(input.problemSlug);
-    if (!problem) {
+    const found = await getProblemForExecution(input.problemSlug);
+    if (!found) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: `Problem "${input.problemSlug}" not found.`,
       });
     }
+    // Run only ever uses the problem's public examples; judge (hidden) cases are not reachable here.
+    const problem = found.problem;
 
     const testCaseIndex = input.testCaseIndex ?? 0;
     const sampleExample = problem.examples[testCaseIndex] ?? problem.examples[0];
 
-    const stdinToUse = input.stdin ? input.stdin : sampleExample?.input || '';
-    const expectedOutputToUse = input.expectedOutput
-      ? input.expectedOutput
-      : sampleExample?.output || '';
+    const stdinToUse: string = typeof input.stdin === 'string' ? input.stdin : (sampleExample?.input ?? '');
+    const hasExplicitStdin = typeof input.stdin === 'string';
+    const expectedOutputToUse: string =
+      typeof input.expectedOutput === 'string' ? input.expectedOutput : (sampleExample?.output ?? '');
+
+    // If explicit stdin is given and differs from sample input, run as custom standalone IO
+    const isCustomRun = hasExplicitStdin && input.stdin !== sampleExample?.input;
+
+    const harnessResult = !isCustomRun
+      ? buildExecutionHarness({
+          problemSlug: problem.slug,
+          language: input.language,
+          sourceCode: input.sourceCode,
+          structuredInput: sampleExample?.structuredInput,
+          rawInput: sampleExample?.input,
+        })
+      : { code: input.sourceCode, wasHarnessed: false };
 
     const execution = await executeWithJudge0({
-      sourceCode: input.sourceCode,
+      sourceCode: harnessResult.code,
       language: input.language,
-      stdin: stdinToUse,
+      stdin: harnessResult.wasHarnessed ? '' : stdinToUse,
     });
 
     const executedAt = new Date().toISOString();
@@ -125,172 +145,77 @@ export const executionRouter = router({
   }),
 
   /**
-   * Evaluates code against all sample test cases of the problem via Judge0 CE.
+   * Evaluates code server-side against all visible samples and, when configured, all judge
+   * (hidden) test cases. Hidden case data is never included in the response.
    */
   submit: publicProcedure
     .input(submitCodeInputSchema)
-    .mutation(async ({ input }): Promise<SubmitCodeResponse> => {
-      const problem = await getProblemForExecution(input.problemSlug);
-      if (!problem) {
+    .mutation(async ({ ctx, input }): Promise<SubmitCodeResponse> => {
+      const found = await getProblemForExecution(input.problemSlug);
+      if (!found) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: `Problem "${input.problemSlug}" not found.`,
         });
       }
 
+      const { problem, fromDatabase } = found;
       const examples = problem.examples && problem.examples.length > 0 ? problem.examples : [];
       const submittedAt = new Date().toISOString();
-      const disclaimer =
-        'Evaluated against available sample test cases only. Passing sample test cases does not guarantee acceptance on hidden judge tests.';
+      const store = ctx?.testCaseStore ?? dbTestCaseStore;
 
-      if (examples.length === 0) {
-        return {
-          success: false,
-          judge0Available: true,
-          language: input.language,
-          verdict: 'SAMPLE_FAILED',
-          totalCases: 0,
-          passedCases: 0,
-          evaluations: [],
-          summary: 'No sample test cases exist for this problem.',
-          error: 'No test cases available to evaluate.',
-          disclaimer,
-          submittedAt,
-        };
+      // Judge cases live only in the database. The bundled mock fallback has none.
+      let judgeCases: ExecutionTestCase[] = [];
+      if (fromDatabase || ctx?.testCaseStore) {
+        try {
+          judgeCases = await store.listForEvaluation(problem.id);
+        } catch (err) {
+          if (isMissingTestCasesTable(err)) {
+            // Migration 0001 not applied: no judge cases can exist, sample-only mode is correct.
+            console.warn('[Execution] test_cases table missing; run database migrations. Evaluating samples only.');
+          } else {
+            // Fail closed: never downgrade a problem that may have hidden cases to sample-only.
+            // Only the error class is logged; it carries no test-case data.
+            console.error(
+              `[Execution] Failed to load judge test cases for problem "${problem.slug}":`,
+              err instanceof Error ? err.name : 'UnknownError'
+            );
+            return {
+              success: false,
+              judge0Available: true,
+              language: input.language,
+              verdict: 'SERVICE_UNAVAILABLE',
+              totalCases: examples.length,
+              passedCases: 0,
+              evaluations: [],
+              summary: 'Submission was not evaluated: judge test cases could not be loaded.',
+              error: 'Judge test cases are temporarily unavailable. Please try again.',
+              disclaimer: SAMPLE_ONLY_DISCLAIMER,
+              submittedAt,
+            };
+          }
+        }
       }
 
-      const evaluations: TestCaseEvaluation[] = [];
-      let passedCases = 0;
-      let totalTime = 0;
-      let maxMemory = 0;
-      let criticalVerdict: SubmissionVerdict | null = null;
+      const outcome = await evaluateSubmission({
+        problem: { slug: problem.slug, examples },
+        judgeCases,
+        language: input.language,
+        sourceCode: input.sourceCode,
+      });
 
-      for (let i = 0; i < examples.length; i++) {
-        const example = examples[i];
-        const execution = await executeWithJudge0({
-          sourceCode: input.sourceCode,
-          language: input.language,
-          stdin: example.input,
-        });
-
-        if (!execution.success) {
-          return {
-            success: false,
-            judge0Available: execution.judge0Available,
-            language: input.language,
-            verdict: 'SERVICE_UNAVAILABLE',
-            totalCases: examples.length,
-            passedCases,
-            evaluations,
-            summary: `Execution aborted: ${execution.error}`,
-            error: execution.error,
-            disclaimer,
-            submittedAt,
-          };
-        }
-
-        const res = execution.result;
-
-        // Record execution time and memory
-        if (res.time) totalTime += parseFloat(res.time) || 0;
-        if (res.memory && res.memory > maxMemory) maxMemory = res.memory;
-
-        // If compilation error occurs, fail immediately with COMPILE_ERROR
-        if (res.errorType === 'compile_error') {
-          evaluations.push({
-            caseIndex: i,
-            input: example.input,
-            expectedOutput: example.output,
-            actualOutput: null,
-            isMatched: false,
-            status: res.status,
-            compileOutput: res.compileOutput,
-            stderr: res.stderr,
-          });
-          criticalVerdict = 'COMPILE_ERROR';
-          break;
-        }
-
-        // If time limit exceeded
-        if (res.errorType === 'time_limit') {
-          evaluations.push({
-            caseIndex: i,
-            input: example.input,
-            expectedOutput: example.output,
-            actualOutput: res.stdout,
-            isMatched: false,
-            status: res.status,
-            executionTime: res.time,
-            memory: res.memory,
-            error: 'Time Limit Exceeded',
-          });
-          criticalVerdict = 'TIME_LIMIT_EXCEEDED';
-          break;
-        }
-
-        // Runtime error
-        if (res.errorType === 'runtime_error') {
-          evaluations.push({
-            caseIndex: i,
-            input: example.input,
-            expectedOutput: example.output,
-            actualOutput: res.stdout,
-            isMatched: false,
-            status: res.status,
-            executionTime: res.time,
-            memory: res.memory,
-            stderr: res.stderr,
-          });
-          criticalVerdict = 'RUNTIME_ERROR';
-          break;
-        }
-
-        // Normal output comparison
-        const matched = compareOutputs(res.stdout, example.output);
-        if (matched) {
-          passedCases++;
-        }
-
-        evaluations.push({
-          caseIndex: i,
-          input: example.input,
-          expectedOutput: example.output,
-          actualOutput: res.stdout,
-          isMatched: matched,
-          status: res.status,
-          executionTime: res.time,
-          memory: res.memory,
-          stderr: res.stderr,
-        });
-      }
-
-      let verdict: SubmissionVerdict;
-      let summary: string;
-
-      if (criticalVerdict) {
-        verdict = criticalVerdict;
-        summary = `Submission failed: ${criticalVerdict.replace(/_/g, ' ')}`;
-      } else if (passedCases === examples.length) {
-        verdict = 'SAMPLE_PASSED';
-        summary = `All ${examples.length} sample test cases passed!`;
-      } else {
-        verdict = 'SAMPLE_FAILED';
-        summary = `${passedCases}/${examples.length} sample test cases passed.`;
+      if (outcome.verdict === 'SAMPLE_PASSED' || outcome.verdict === 'ACCEPTED') {
+        // Every ACCEPTED submission also passed all samples, so the existing event type stays truthful.
+        publishPracticeSamplePassed({ slug: problem.slug, title: problem.title });
       }
 
       return {
-        success: verdict === 'SAMPLE_PASSED',
-        judge0Available: true,
+        ...outcome,
         language: input.language,
-        verdict,
-        totalCases: examples.length,
-        passedCases,
-        evaluations,
-        summary,
-        executionTime: `${totalTime.toFixed(3)}s`,
-        memory: maxMemory,
-        disclaimer,
         submittedAt,
       };
     }),
 });
+
+// Re-exported for consumers that want to label results consistently.
+export { fullEvaluationDisclaimer, SAMPLE_ONLY_DISCLAIMER };
