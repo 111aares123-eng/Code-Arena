@@ -1,99 +1,33 @@
-# Auth & Dashboards: integration notes
+# Auth and main integration
 
-Status as of 2026-10-18. Branch: `auth-and-dashboards` (work in progress, **not ready to merge**).
-Compared against GitHub `main` at `c3ffba7` (Merge PR #3, `chore/remove-duplicate-migration`).
+Status: integration completed on `tnivedha-257-auth-main-integration`. The branch started from `auth-and-dashboards` at `dee5723fb4ab3e1c6dffccfd21d70e4d42d6d7b3` and merged `origin/main` at `c3ffba79b03d1bc86c811760e17827dec293e983`.
 
-This branch was built before `main` gained a database layer and a test-case admin API. The two designs overlap in several places. This note lists what the branch adds, where it conflicts with `main`, and how I plan to fix it. I will make the corrections on my side, in a separate integration branch, after agreeing the points under "Questions for the team".
+## Agreed decisions
 
-## 1. What this branch adds
+- Keep main's `users` table and `user_role` enum. Learners use `STUDENT`; mentors use `INSTRUCTOR`; `ADMIN` is also authorized for mentor-only procedures.
+- Add nullable `password_hash`; account creation always writes a bcrypt hash at cost 12. Login rejects accounts without a hash using the same generic invalid-credentials response.
+- Keep required, unique `username`. Signup normalizes by trimming and lowercasing, then validates 3-30 characters from `a-z`, `0-9`, and underscore. Duplicate usernames are reported from the database unique-constraint violation, without an existence check.
+- Store the optional display name in `display_name`. Auth profiles expose `id`, `username`, `displayName`, `email`, `role`, `avatarUrl`, and `createdAt`.
+- Preserve main's migrations through `0002_futuristic_ironclad`; remove the old auth-branch `0001_damp_madame_hydra` migration. New migration `0003_loose_captain_cross.sql` adds only `sessions` and nullable `users.password_hash`.
+- Use one shared `apps/api/src/trpc.ts` and one `ApiContext`. All context properties remain optional for existing router callers; it retains `authorization` and `testCaseStore` while adding the session identity and response headers.
+- Test-case administration is protected by `mentorProcedure`; it permits `INSTRUCTOR` and `ADMIN`. No token-based fallback remains.
+- Keep invite-code checks before database access, constant-time SHA-256 digest comparison, generic login failures, and the existing HttpOnly/SameSite/Path cookie settings (Secure only in production).
 
-Backend (apps/api, packages/db):
-- Email and password accounts. `auth.register` (learners only), `auth.login`, `auth.logout`, `auth.me`.
-- Sessions: random `ses_` IDs stored in a `sessions` table, sent as an HttpOnly `session` cookie (SameSite=Lax, 7 days, `Secure` in production). bcryptjs, cost 12.
-- Role-aware tRPC procedures: `protectedProcedure`, `mentorProcedure`, in a shared `apps/api/src/trpc.ts`.
-- Mentor accounts: created by `pnpm create-mentor` (env `MENTOR_NAME`, `MENTOR_EMAIL`, `MENTOR_PASSWORD`) or by `auth.registerMentor`, which requires the secret `MENTOR_INVITE_CODE` (min 16 chars, constant-time compare, checked before any DB access).
-- Credentialed CORS (`credentials: true`, explicit origins).
+## Completed
 
-Frontend (apps/web):
-- Pages `/login`, `/register` (learners), `/admin/login` (mentors).
-- Server-side route protection by calling `auth.me` with the incoming `session` cookie: `/dashboard` is learner-only, `/admin` is mentor-only.
-- Navbar login state (logged out: Log in / Sign up; logged in: name, dashboard link, Log out).
-- Placeholder dashboards with "Coming soon" sections and no fake data.
+- Merged the latest `origin/main`, retaining its database tables, evaluation/harness implementation, test-case admin router, and migration history.
+- Ported login, learner registration, invite-gated mentor registration, logout, session validation, and `auth.me` to main's schema and role values.
+- Added `MENTOR_USERNAME` to the mentor creation script configuration.
+- Updated registration UI with a username field and dashboards with `@username`; role checks recognize `STUDENT`, `INSTRUCTOR`, and `ADMIN`.
+- Replaced test-case admin authorization tests with injected mentor/learner contexts. Evaluation, harness, and secure-evaluation test files from main remain unchanged.
+- Updated the root `.env.example` with mentor username and invite-code settings.
 
-## 2. Other branches on GitHub
+## Remaining / not performed
 
-| Branch | Author | State |
-|---|---|---|
-| `main` (`c3ffba7`) | team | Includes everything below that is marked merged. |
-| `feature/live-game-layer` | Captvarun | Merged (PR #1). No overlap with auth. |
-| `sync/code-arena-enhanced` | Captvarun | Already contained in `main`. |
-| `feature/data-contests` | Karthika | Merged (PR #2). Adds users, submissions, contests, progress, achievements tables. **Main source of conflicts.** |
-| `chore/remove-duplicate-migration` | Karthika | Merged (PR #3). Cleanup of migrations. |
-| Aares's commits on `main` | Aares | Hidden-test evaluation, test-case admin router, `ADMIN_API_TOKEN`. **Second source of conflicts.** |
+- The generated migration has not been applied. Do not apply it until the local database has been backed up/reset by its owner.
+- Real database-backed registration, login, cookies, and `auth.me` have not been manually tested.
+- Out of scope: submission persistence, contest ownership, mentor/learner linking, real dashboard data, and `/admin/register`.
 
-## 3. Conflicts with `main`
+## Local database test steps
 
-| Area | `main` | This branch | Planned resolution |
-|---|---|---|---|
-| `users` table | `username` (required, unique), `display_name`, `xp`, `rating`, no password | `name`, `password_hash`, no username, no xp/rating | Use `main`'s table as the base. Add `password_hash` to it. |
-| `user_role` enum | `STUDENT`, `ADMIN`, `INSTRUCTOR` | `learner`, `mentor` | Keep `main`'s enum. Map learner = `STUDENT`, mentor = `INSTRUCTOR`. `ADMIN` stays free for a future superadmin. |
-| `sessions` table | none | `sessions` (id, user_id, expires_at) | Keep it. Add it in a new migration on top of `main`'s. |
-| Migrations | `0001_smart_zombie`, `0002_futuristic_ironclad` in the journal | my own `0001_damp_madame_hydra` | Delete my 0001. Generate a new migration after 0002. |
-| `apps/api/src/context.ts` | `createApiContext(req)` returns `{ authorization, testCaseStore? }` (all fields optional, tests use `createCaller({})`) | context loads the session user and writes cookies through the adapter's `resHeaders` | Merge into one `ApiContext` that keeps `authorization` and `testCaseStore` and adds the session user. Fields stay optional so existing tests still compile. |
-| tRPC instance | Each router file calls `initTRPC.context<ApiContext>().create()` | One shared `apps/api/src/trpc.ts` | Use the shared instance everywhere, including Aares's `execution.ts` and `test-case-admin.ts`. |
-| `apps/api/src/index.ts` | `createContext: (_opts, c) => createApiContext(c.req.raw)`, adds `testCaseAdmin` router | my own `createContext`, `authRouter`, credentialed CORS | Merge by hand: keep `testCaseAdmin`, keep `auth`, keep credentialed CORS. |
-| Admin authorization | `ADMIN_API_TOKEN` shared secret as a Bearer token (code comment says to replace it once real auth exists) | `mentorProcedure` (session cookie, role check) | Switch test-case admin to `mentorProcedure`. Keep the token as an optional fallback only if Aares wants it. |
-| `drizzle.config.ts` | loads `../../.env` | not changed | Take `main`'s version. |
-| Local DB | migrations 0000 to 0002 | my local DB has my 0001 applied | Local dev DB must be reset (drop the volume or database). It only holds test accounts. |
-
-Things that do not conflict: the web app (no changes on `main` touch navbar, layout or the new pages), `packages/shared`, and the test-case panel UI.
-
-## 4. What `main` already gives the dashboards
-
-- `submissions` (user, problem, language, verdict, passed/total cases), owned by Karthika.
-- `student_problem_progress`, `student_stats`, `achievements`, `user_achievements`.
-- `contests`, `contest_problems` (with points), `contest_participants` (score, penalty, problems solved), `contest_submissions`, `contest_solves`.
-- Queries: `getContestLeaderboard`, `recordContestSubmission`, a leaderboard query ranking by `xp` then `rating`.
-
-Gaps for the mentor features:
-- `contests` has **no owner**. Contests need a `created_by` (mentor user id) so a mentor can list their own contests.
-- No link between a learner and a mentor.
-- `execution.submit` does not store a submission or know who the user is yet.
-
-## 5. Plan
-
-1. **Backup.** Push this branch as is, so the work is on GitHub. It will not be merged.
-2. **Agree the points below** with Karthika (database) and Aares (API).
-3. **Integration branch** (new branch from latest `main`, never edit `main` directly):
-   - Add `password_hash` and `sessions` to `main`'s `users` schema, new migration after 0002.
-   - Port the auth router, `create-mentor` script and invite-code signup to the new columns and roles. Registration must produce a `username` (see Questions).
-   - Merge the two contexts and move all routers to the shared tRPC instance. Make sure the existing tests (`pnpm test`) still pass.
-   - Replace `ADMIN_API_TOKEN` checks with `mentorProcedure`.
-   - Reset the local DB and rerun the manual login checks.
-4. **Direct mentor links.** Add `mentor_id` (nullable) on learner rows and a join code per mentor. Learner enters the code to link.
-5. **Contest ownership.** Add `created_by` to `contests` (Karthika's table, so agree with her first).
-6. **Real dashboard data.** Learner: solved count, joined contests, mentor. Mentor: my students, my contests. Read from the existing tables.
-7. **Record submissions with the logged-in user.** Small change in `execution.submit` (Aares's code): write a `submissions` row with the session user's id.
-8. **Mentor signup page** `/admin/register` using the invite code.
-9. **Hardening backlog:** login and invite-code rate limiting, expired-session cleanup, `NODE_ENV=production` (hides error stack traces), a committed docker-compose for Postgres.
-
-## 6. Questions for the team
-
-For Karthika:
-- Can `password_hash` be added to `users` (nullable at first, or required)?
-- Learner and mentor roles are `STUDENT` and `INSTRUCTOR`. Okay?
-- `username` is required and unique. Should signup ask for it, or derive it from the email (with a numeric suffix on clashes)?
-- Can `contests` get a `created_by` column pointing to the mentor?
-
-For Aares:
-- OK to replace the `ADMIN_API_TOKEN` check with a mentor session check? Keep the token as a fallback?
-- OK to add a `submissions` insert (with the session user's id) to `execution.submit`?
-- Any objection to all routers using one shared tRPC instance in `trpc.ts`?
-
-For everyone:
-- Which route do mentor-posted contests use: Karthika's `contests` table directly, with the mentor as owner?
-
-## 7. Not yet verified
-
-- A real merge of `main` into this branch has not been attempted. The conflict list comes from reading the diff between `55850d4` and `c3ffba7`, so one or two more small conflicts may appear.
-- Everything in section 1 has been tested locally against a Postgres 18 container, but not yet against `main`'s schema.
+After backing up any wanted local data, the repository owner can reset the local database using their chosen local Postgres reset method, then run `pnpm.cmd db:migrate`. Set `MENTOR_USERNAME`, `MENTOR_NAME`, `MENTOR_EMAIL`, and `MENTOR_PASSWORD` in the root `.env` before `pnpm.cmd create-mentor`; set `MENTOR_INVITE_CODE` to a private value at least 16 characters long to enable invited mentor registration. Then start the API and web app and test learner registration, mentor login, the session cookie, and `auth.me`. No reset or migration command was run during this integration.

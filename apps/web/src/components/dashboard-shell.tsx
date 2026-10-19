@@ -69,16 +69,16 @@ export function DashboardShell({
             )}
           </div>
           <div className="relative">
-          <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] ${styles.kicker}`}>
-            <span className={`ca-status-ping h-1.5 w-1.5 rounded-full ${styles.dot}`} aria-hidden="true" />
-            {kicker}
-          </div>
-          <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            {heading}, <span className="text-zinc-300">{displayName}</span>
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
-            Your CodeArena profile and workspace.
-          </p>
+            <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] ${styles.kicker}`}>
+              <span className={`ca-status-ping h-1.5 w-1.5 rounded-full ${styles.dot}`} aria-hidden="true" />
+              {kicker}
+            </div>
+            <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
+              {heading}, <span className="text-zinc-300">{displayName}</span>
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
+              Your CodeArena profile and workspace.
+            </p>
           </div>
         </header>
 

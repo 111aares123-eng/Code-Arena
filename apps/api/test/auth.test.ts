@@ -140,6 +140,28 @@ test('duplicate username is reported from the unique constraint error', async ()
   assert.equal(fake.selectCalls, 0);
 });
 
+test('duplicate email keeps the existing registration conflict message', async () => {
+  const duplicate = Object.assign(new Error('duplicate key'), {
+    code: '23505',
+    constraint_name: 'users_email_unique',
+  });
+  const fake = makeDb({ insertError: duplicate });
+  await assert.rejects(
+    createAuthRouter(() => fake.db).createCaller(context()).register(accountInput),
+    { code: 'CONFLICT', message: 'An account with this email already exists.' }
+  );
+  assert.equal(fake.selectCalls, 0);
+});
+
+test('registration rejects usernames outside the normalized format', async () => {
+  const fake = makeDb();
+  const caller = createAuthRouter(() => fake.db).createCaller(context());
+  await assert.rejects(caller.register({ ...accountInput, username: 'bad-name' }));
+  await assert.rejects(caller.register({ ...accountInput, username: 'ab' }));
+  await assert.rejects(caller.register({ ...accountInput, username: 'a'.repeat(31) }));
+  assert.equal(fake.insertedUser, undefined);
+});
+
 test('login rejects null password hashes with the generic credential error', async () => {
   const fake = makeDb({
     loginUser: {
