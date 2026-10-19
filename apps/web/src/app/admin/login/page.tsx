@@ -7,7 +7,7 @@ import { getCurrentUser } from '../../../lib/auth-server';
 
 async function MentorLoginPageContent() {
   const user = await getCurrentUser();
-  if (user) redirect(user.role === 'mentor' ? '/admin' : '/dashboard');
+  if (user) redirect(user.role === 'STUDENT' ? '/dashboard' : '/admin');
 
   return (
     <AuthPageLayout

@@ -11,7 +11,7 @@ type AuthFormProps = {
 };
 
 function dashboardFor(user: AuthUser) {
-  return user.role === 'mentor' ? '/admin' : '/dashboard';
+  return user.role === 'STUDENT' ? '/dashboard' : '/admin';
 }
 
 export function AuthForm({ mode, audience }: AuthFormProps) {
@@ -42,23 +42,27 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
     try {
       const result = isRegister
         ? await register({
-            name: String(formData.get('name') ?? ''),
+            username: String(formData.get('username') ?? ''),
+            displayName: String(formData.get('name') ?? ''),
             email,
             password,
           })
         : await login({ email, password });
 
-      if (result.user.role !== audience) {
-        const correctLogin = result.user.role === 'mentor' ? '/admin/login' : '/login';
+      const userIsMentor = result.user.role === 'INSTRUCTOR' || result.user.role === 'ADMIN';
+      const audienceIsMentor = audience === 'mentor';
+      if (userIsMentor !== audienceIsMentor) {
+        const correctLogin = userIsMentor ? '/admin/login' : '/login';
+        const roleLabel = userIsMentor ? 'mentor' : 'learner';
         try {
           await logout();
           router.refresh();
           setError(
-            `This account is for ${result.user.role}s. You have been logged out; sign in at ${correctLogin} instead.`
+            `This account is for ${roleLabel}s. You have been logged out; sign in at ${correctLogin} instead.`
           );
         } catch {
           setError(
-            `This account is for ${result.user.role}s. We could not clear its session; please sign out and use ${correctLogin}.`
+            `This account is for ${roleLabel}s. We could not clear its session; please sign out and use ${correctLogin}.`
           );
         }
         return;
@@ -77,8 +81,24 @@ export function AuthForm({ mode, audience }: AuthFormProps) {
     <form onSubmit={handleSubmit} className="ca-enter ca-enter-4 min-w-0 space-y-5">
       {isRegister && (
         <div>
+          <label htmlFor="username" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
+            Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autoComplete="username"
+            autoCapitalize="none"
+            required
+            minLength={3}
+            maxLength={30}
+            pattern="[a-zA-Z0-9_]{3,30}"
+            title="Use 3 to 30 letters, numbers, or underscores."
+            className={`mb-5 w-full min-w-0 rounded-xl border border-zinc-700/80 bg-zinc-950/80 px-4 py-3 text-sm text-white outline-none transition-colors focus:ring-2 ${focusStyle}`}
+          />
           <label htmlFor="name" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
-            Full name
+            Display name
           </label>
           <input
             id="name"

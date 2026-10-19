@@ -1,9 +1,10 @@
 import { LogoutButton } from './logout-button';
 
 type DashboardUser = {
-  name: string;
+  username: string;
+  displayName: string | null;
   email: string;
-  role: 'learner' | 'mentor';
+  role: 'STUDENT' | 'ADMIN' | 'INSTRUCTOR';
 };
 
 type DashboardShellProps = {
@@ -53,6 +54,7 @@ export function DashboardShell({
   tone,
 }: DashboardShellProps) {
   const styles = toneStyles[tone];
+  const displayName = user.displayName ?? user.username;
 
   return (
     <main className="relative flex-1 overflow-hidden px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
@@ -72,7 +74,7 @@ export function DashboardShell({
             {kicker}
           </div>
           <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
-            {heading}, <span className="text-zinc-300">{user.name}</span>
+            {heading}, <span className="text-zinc-300">{displayName}</span>
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
             Your CodeArena profile and workspace.
@@ -83,10 +85,11 @@ export function DashboardShell({
         <section className="flex min-w-0 flex-col gap-5 rounded-3xl border border-white/[0.09] bg-gradient-to-br from-[#111827] via-zinc-900 to-zinc-950 p-5 shadow-xl shadow-black/20 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div className="flex min-w-0 items-center gap-4">
             <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border text-lg font-bold ${styles.avatar}`} aria-hidden="true">
-              {getInitials(user.name)}
+              {getInitials(displayName)}
             </div>
             <div className="min-w-0">
-              <p className="break-words text-base font-semibold text-white">{user.name}</p>
+              <p className="break-words text-base font-semibold text-white">{displayName}</p>
+              <p className="mt-0.5 text-xs font-medium text-indigo-200">@{user.username}</p>
               <p className="mt-1 break-all text-sm text-zinc-400">{user.email}</p>
               <span className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${styles.badge}`}>
                 {user.role}

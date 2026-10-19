@@ -15,7 +15,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 });
 
 export const mentorProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.role !== 'mentor') {
+  if (ctx.role !== 'INSTRUCTOR' && ctx.role !== 'ADMIN') {
     throw new TRPCError({ code: 'FORBIDDEN', message: 'You must be a mentor.' });
   }
 

@@ -2,31 +2,35 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { getDb, users, sessions, eq, type DatabaseInstance } from '@code-arena/db';
+import { getDb, users, sessions, eq, type DatabaseInstance, type UserSelect } from '@code-arena/db';
 import { protectedProcedure, publicProcedure, router } from '../trpc';
 
-// ─── Input Schemas ────────────────────────────────────────────────────────────
+const BCRYPT_COST = 12;
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const secureCookieAttribute = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3, 'Username must be at least 3 characters.')
+  .max(30, 'Username must be no more than 30 characters.')
+  .regex(/^[a-z0-9_]+$/, 'Username may contain only letters, numbers, and underscores.');
 
 const accountSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  username: usernameSchema,
   email: z.string().trim().toLowerCase().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  displayName: z.string().trim().min(2).max(100).optional(),
 });
 
 const registerSchema = accountSchema;
-const registerMentorSchema = accountSchema.extend({
-  inviteCode: z.string(),
-});
-
+const registerMentorSchema = accountSchema.extend({ inviteCode: z.string() });
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
-// ─── Session helpers ──────────────────────────────────────────────────────────
-
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-const secureCookieAttribute = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+type AuthProfile = Pick<UserSelect, 'id' | 'username' | 'displayName' | 'email' | 'role' | 'avatarUrl' | 'createdAt'>;
 
 function makeSessionCookie(sessionId: string): string {
   return `session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${SESSION_TTL_MS / 1000}${secureCookieAttribute}`;
@@ -34,6 +38,13 @@ function makeSessionCookie(sessionId: string): string {
 
 function clearSessionCookie(): string {
   return `session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secureCookieAttribute}`;
+}
+
+function setCookie(ctx: { resHeaders?: Headers }, value: string) {
+  if (!ctx.resHeaders) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Response headers are unavailable.' });
+  }
+  ctx.resHeaders.set('Set-Cookie', value);
 }
 
 function verifyMentorInviteCode(inviteCode: string): void {
@@ -49,135 +60,127 @@ function verifyMentorInviteCode(inviteCode: string): void {
   }
 }
 
+function uniqueViolationDetails(error: unknown): string | null {
+  if (!(error instanceof Error)) return null;
+  const databaseError = error as Error & {
+    code?: string;
+    constraint?: string;
+    constraint_name?: string;
+    detail?: string;
+  };
+  if (databaseError.code !== '23505') return null;
+  return `${databaseError.constraint ?? ''} ${databaseError.constraint_name ?? ''} ${databaseError.detail ?? ''}`;
+}
+
+function accountConflict(error: unknown): TRPCError | null {
+  const details = uniqueViolationDetails(error);
+  if (!details) return null;
+  if (/username/i.test(details)) {
+    return new TRPCError({ code: 'CONFLICT', message: 'That username is already taken.' });
+  }
+  if (/email/i.test(details)) {
+    return new TRPCError({ code: 'CONFLICT', message: 'An account with this email already exists.' });
+  }
+  return new TRPCError({ code: 'CONFLICT', message: 'An account with that username or email already exists.' });
+}
+
+function profileFromRow(user: UserSelect): AuthProfile {
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    email: user.email,
+    role: user.role,
+    avatarUrl: user.avatarUrl,
+    createdAt: user.createdAt,
+  };
+}
+
 async function createAccountAndSession(
   db: DatabaseInstance,
-  ctx: { resHeaders: Headers },
+  ctx: { resHeaders?: Headers },
   input: z.infer<typeof accountSchema>,
-  role: 'learner' | 'mentor'
+  role: 'STUDENT' | 'INSTRUCTOR'
 ) {
-  const existing = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
-  if (existing.length > 0) {
-    throw new TRPCError({ code: 'CONFLICT', message: 'An account with this email already exists.' });
-  }
-
-  const passwordHash = await bcrypt.hash(input.password, 12);
+  const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
   const userId = `usr_${randomUUID()}`;
-  const [user] = await db
-    .insert(users)
-    .values({
-      id: userId,
-      name: input.name,
-      email: input.email,
-      passwordHash,
-      role,
-    })
-    .returning({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      role: users.role,
-    });
+  let user: UserSelect;
+
+  try {
+    [user] = await db
+      .insert(users)
+      .values({
+        id: userId,
+        username: input.username,
+        email: input.email,
+        passwordHash,
+        displayName: input.displayName,
+        role,
+      })
+      .returning();
+  } catch (error) {
+    const conflict = accountConflict(error);
+    if (conflict) throw conflict;
+    throw error;
+  }
 
   const sessionId = `ses_${randomBytes(32).toString('base64url')}`;
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
   await db.insert(sessions).values({ id: sessionId, userId: user.id, expiresAt });
-  ctx.resHeaders.set('Set-Cookie', makeSessionCookie(sessionId));
-
-  return { user };
+  setCookie(ctx, makeSessionCookie(sessionId));
+  return { user: profileFromRow(user) };
 }
-
-// ─── Auth Router ──────────────────────────────────────────────────────────────
 
 export function createAuthRouter(dbProvider: () => DatabaseInstance = getDb) {
   return router({
-    /**
-     * POST /trpc/auth.register
-     * Create a new learner account.
-     */
     register: publicProcedure.input(registerSchema).mutation(async ({ input, ctx }) =>
-      createAccountAndSession(dbProvider(), ctx, input, 'learner')
+      createAccountAndSession(dbProvider(), ctx, input, 'STUDENT')
     ),
 
-    /**
-     * POST /trpc/auth.registerMentor
-     * Create a mentor account after validating its invite code.
-     */
     registerMentor: publicProcedure.input(registerMentorSchema).mutation(async ({ input, ctx }) => {
       verifyMentorInviteCode(input.inviteCode);
       const { inviteCode: _inviteCode, ...accountInput } = input;
-      return createAccountAndSession(dbProvider(), ctx, accountInput, 'mentor');
+      return createAccountAndSession(dbProvider(), ctx, accountInput, 'INSTRUCTOR');
     }),
 
-    /**
-     * POST /trpc/auth.login
-     * Verify credentials and issue a session cookie.
-     */
     login: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
       const db = dbProvider();
-
       const [user] = await db.select().from(users).where(eq(users.email, input.email)).limit(1);
-
-      if (!user) {
-        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password.' });
+      if (!user || !user.passwordHash) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
       }
 
       const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
       if (!passwordMatch) {
-        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password.' });
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
       }
 
-      // Create new session
       const sessionId = `ses_${randomBytes(32).toString('base64url')}`;
       const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
       await db.insert(sessions).values({ id: sessionId, userId: user.id, expiresAt });
-
-      ctx.resHeaders.set('Set-Cookie', makeSessionCookie(sessionId));
-
-      return {
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
-      };
+      setCookie(ctx, makeSessionCookie(sessionId));
+      return { user: profileFromRow(user) };
     }),
 
-    /**
-     * POST /trpc/auth.logout
-     * Delete the current session and clear the cookie.
-     */
     logout: protectedProcedure.mutation(async ({ ctx }) => {
-      const db = dbProvider();
-      const sessionId = ctx.sessionId;
-      if (sessionId) {
-        await db.delete(sessions).where(eq(sessions.id, sessionId));
+      if (!ctx.resHeaders) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Response headers are unavailable.' });
       }
-      ctx.resHeaders.set('Set-Cookie', clearSessionCookie());
+      if (ctx.sessionId) {
+        await dbProvider().delete(sessions).where(eq(sessions.id, ctx.sessionId));
+      }
+      setCookie(ctx, clearSessionCookie());
       return { success: true };
     }),
 
-    /**
-     * GET /trpc/auth.me
-     * Return the currently logged-in user's profile, or null if not logged in.
-     */
     me: publicProcedure.query(async ({ ctx }) => {
       if (!ctx.userId) return null;
-      const db = dbProvider();
-      const [user] = await db
-        .select({
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          role: users.role,
-          avatarUrl: users.avatarUrl,
-          createdAt: users.createdAt,
-        })
+      const [user] = await dbProvider()
+        .select()
         .from(users)
         .where(eq(users.id, ctx.userId))
         .limit(1);
-
-      return user ?? null;
+      return user ? profileFromRow(user) : null;
     }),
   });
 }

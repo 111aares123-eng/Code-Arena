@@ -3,7 +3,7 @@ import { requireUserRole } from '../../lib/auth-server';
 import { DashboardShell } from '../../components/dashboard-shell';
 
 async function DashboardContent() {
-  const user = await requireUserRole('learner');
+  const user = await requireUserRole('STUDENT');
 
   return (
     <DashboardShell

@@ -1,8 +1,11 @@
 export type AuthUser = {
   id: string;
-  name: string;
+  username: string;
+  displayName: string | null;
   email: string;
-  role: 'learner' | 'mentor';
+  role: 'STUDENT' | 'ADMIN' | 'INSTRUCTOR';
+  avatarUrl: string | null;
+  createdAt: string;
 };
 
 type AuthCredentials = {
@@ -11,7 +14,8 @@ type AuthCredentials = {
 };
 
 type RegisterInput = AuthCredentials & {
-  name: string;
+  username: string;
+  displayName?: string;
 };
 
 type TrpcResponse<T> = {

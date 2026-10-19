@@ -1,40 +1,33 @@
+import type { TestCaseStore } from './services/test-case-store';
 import { getDb, sessions, users, eq } from '@code-arena/db';
-import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
+import type { UserSelect } from '@code-arena/db';
 
-/**
- * tRPC context — populated per-request.
- * Contains the session ID and user ID parsed from the incoming cookie,
- * plus the response headers object so auth routes can set Set-Cookie.
- */
-export type Context = {
-  sessionId: string | null;
-  userId: string | null;
-  role: 'learner' | 'mentor' | null;
-  resHeaders: Headers;
-};
+export interface ApiContext {
+  [key: string]: unknown;
+  authorization?: string | null;
+  testCaseStore?: TestCaseStore;
+  sessionId?: string | null;
+  userId?: string | null;
+  role?: UserSelect['role'] | null;
+  resHeaders?: Headers;
+}
 
-/**
- * Build the tRPC context from the fetch adapter's request options.
- * Reads the `session` cookie, validates it against the DB, and
- * attaches user identity if the session is valid and not expired.
- */
-export async function createContext({ req, resHeaders }: FetchCreateContextFnOptions): Promise<Context> {
+export type Context = ApiContext;
+
+export async function createApiContext(req: Request, resHeaders: Headers = new Headers()): Promise<ApiContext> {
   const cookieHeader = req.headers.get('cookie') ?? '';
-
-  // Parse the session cookie
   const sessionId =
     cookieHeader
       .split(';')
-      .map((c) => c.trim())
-      .find((c) => c.startsWith('session='))
-      ?.split('=')[1]
-      ?.trim() ?? null;
+      .map((cookie) => cookie.trim())
+      .find((cookie) => cookie.startsWith('session='))
+      ?.slice('session='.length)
+      .trim() || null;
 
   if (!sessionId) {
-    return { sessionId: null, userId: null, role: null, resHeaders };
+    return { authorization: req.headers.get('authorization'), sessionId: null, userId: null, role: null, resHeaders };
   }
 
-  // Validate session in the DB
   const db = getDb();
   const [session] = await db
     .select({ userId: sessions.userId, expiresAt: sessions.expiresAt })
@@ -43,7 +36,7 @@ export async function createContext({ req, resHeaders }: FetchCreateContextFnOpt
     .limit(1);
 
   if (!session || session.expiresAt < new Date()) {
-    return { sessionId, userId: null, role: null, resHeaders };
+    return { authorization: req.headers.get('authorization'), sessionId, userId: null, role: null, resHeaders };
   }
 
   const [user] = await db
@@ -53,8 +46,14 @@ export async function createContext({ req, resHeaders }: FetchCreateContextFnOpt
     .limit(1);
 
   if (!user) {
-    return { sessionId, userId: null, role: null, resHeaders };
+    return { authorization: req.headers.get('authorization'), sessionId, userId: null, role: null, resHeaders };
   }
 
-  return { sessionId, userId: session.userId, role: user.role, resHeaders };
+  return {
+    authorization: req.headers.get('authorization'),
+    sessionId,
+    userId: session.userId,
+    role: user.role,
+    resHeaders,
+  };
 }

@@ -1,29 +1,29 @@
-import { pgTable, varchar, timestamp, pgEnum, text } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, text, timestamp, pgEnum, integer, index } from 'drizzle-orm/pg-core';
 
-// User role enum: 'learner' (student) vs 'mentor' (admin/instructor)
-export const userRoleEnum = pgEnum('user_role', ['learner', 'mentor']);
+// User role enum: STUDENT, ADMIN, INSTRUCTOR
+export const userRoleEnum = pgEnum('user_role', ['STUDENT', 'ADMIN', 'INSTRUCTOR']);
 
-export const users = pgTable('users', {
-  id: varchar('id', { length: 64 }).primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
-  role: userRoleEnum('role').notNull().default('learner'),
-  avatarUrl: text('avatar_url'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
-
-export const sessions = pgTable('sessions', {
-  id: varchar('id', { length: 128 }).primaryKey(),
-  userId: varchar('user_id', { length: 64 })
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-});
+export const users = pgTable(
+  'users',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    username: varchar('username', { length: 50 }).notNull().unique(),
+    email: varchar('email', { length: 255 }).notNull().unique(),
+    passwordHash: varchar('password_hash', { length: 255 }),
+    displayName: varchar('display_name', { length: 100 }),
+    avatarUrl: text('avatar_url'),
+    role: userRoleEnum('role').notNull().default('STUDENT'),
+    xp: integer('xp').notNull().default(0),
+    rating: integer('rating').notNull().default(1200),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('users_xp_idx').on(table.xp),
+    index('users_rating_idx').on(table.rating),
+    index('users_role_idx').on(table.role),
+  ]
+);
 
 export type UserSelect = typeof users.$inferSelect;
 export type UserInsert = typeof users.$inferInsert;
-export type SessionSelect = typeof sessions.$inferSelect;
-export type SessionInsert = typeof sessions.$inferInsert;

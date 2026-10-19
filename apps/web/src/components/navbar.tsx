@@ -5,7 +5,8 @@ import { LogoutButton } from './logout-button';
 
 async function AuthActions() {
   const user = await getCurrentUser();
-  const dashboardHref = user?.role === 'mentor' ? '/admin' : '/dashboard';
+  const userIsMentor = user?.role === 'INSTRUCTOR' || user?.role === 'ADMIN';
+  const dashboardHref = userIsMentor ? '/admin' : '/dashboard';
 
   return (
     <div className="flex items-center gap-3">
@@ -15,7 +16,7 @@ async function AuthActions() {
       </div>
       {user ? (
         <>
-          <span className="hidden text-sm text-zinc-300 sm:inline">{user.name}</span>
+          <span className="hidden text-sm text-zinc-300 sm:inline">{user.displayName ?? user.username}</span>
           <Link
             href={dashboardHref}
             className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
@@ -23,7 +24,7 @@ async function AuthActions() {
             Dashboard
           </Link>
           <LogoutButton
-            redirectTo={user.role === 'mentor' ? '/admin/login' : '/login'}
+            redirectTo={userIsMentor ? '/admin/login' : '/login'}
             className="inline-flex items-center justify-center rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 hover:bg-zinc-800 disabled:opacity-60"
           />
         </>

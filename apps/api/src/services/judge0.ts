@@ -1,4 +1,5 @@
 import type { ExecutionLanguage, ExecutionResult, Judge0Status } from '@code-arena/shared';
+import { JUDGE0_STATUS, mapJudge0StatusToErrorType } from './judge0-status.ts';
 
 export interface Judge0Config {
   baseUrl: string;
@@ -163,6 +164,7 @@ export async function executeWithJudge0(params: {
   };
 
   const controller = new AbortController();
+  const requestStartedAt = Date.now();
   const timer = setTimeout(() => controller.abort(), config.timeoutMs);
 
   try {
@@ -196,13 +198,14 @@ export async function executeWithJudge0(params: {
     let submission = (await res.json()) as RawJudge0SubmissionResponse;
 
     // 2. If status is in queue (1) or processing (2), poll until completed or timeout
-    if (submission.token && (submission.status?.id === 1 || submission.status?.id === 2)) {
+    if (submission.token && (submission.status?.id === JUDGE0_STATUS.IN_QUEUE || submission.status?.id === JUDGE0_STATUS.PROCESSING)) {
       const pollStart = Date.now();
-      const maxPollMs = config.timeoutMs;
+      // Polling shares the request deadline: only the time left after the initial POST is available.
+      const maxPollMs = Math.max(0, config.timeoutMs - (pollStart - requestStartedAt));
 
       while (
         submission.status &&
-        (submission.status.id === 1 || submission.status.id === 2) &&
+        (submission.status.id === JUDGE0_STATUS.IN_QUEUE || submission.status.id === JUDGE0_STATUS.PROCESSING) &&
         Date.now() - pollStart < maxPollMs
       ) {
         // Sleep 500ms between polls
@@ -223,11 +226,12 @@ export async function executeWithJudge0(params: {
       }
     }
 
-    if (!submission.status || submission.status.id < 3) {
+    // Check if execution completed or timed out
+    if (!submission.status || submission.status.id === JUDGE0_STATUS.IN_QUEUE || submission.status.id === JUDGE0_STATUS.PROCESSING) {
       return { success: false, judge0Available: true, error: 'Execution did not finish before the request deadline. Please try again.' };
     }
 
-    // 3. Map status and errors
+    // 3. Map status and errors using centralized mapping
     const statusId = submission.status?.id ?? 0;
     const statusDesc = submission.status?.description ?? 'Unknown';
     const status: Judge0Status = {
@@ -235,25 +239,7 @@ export async function executeWithJudge0(params: {
       description: statusDesc,
     };
 
-    let errorType: ExecutionResult['errorType'];
-    let isError = false;
-
-    if (statusId === 6) {
-      errorType = 'compile_error';
-      isError = true;
-    } else if (statusId >= 7 && statusId <= 12) {
-      errorType = 'runtime_error';
-      isError = true;
-    } else if (statusId === 5) {
-      errorType = 'time_limit';
-      isError = true;
-    } else if (statusId === 13 || statusId === 14) {
-      errorType = 'unknown';
-      isError = true;
-    } else if (statusId !== 3 && statusId !== 4) {
-      isError = true;
-      errorType = 'unknown';
-    }
+    const { isError, errorType } = mapJudge0StatusToErrorType(statusId);
 
     const result: ExecutionResult = {
       stdout: decodeBase64(submission.stdout),

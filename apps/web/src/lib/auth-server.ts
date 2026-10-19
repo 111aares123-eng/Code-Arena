@@ -13,9 +13,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 }
 
-export async function requireUserRole(role: AuthUser['role']): Promise<AuthUser> {
+export async function requireUserRole(role: 'STUDENT' | 'INSTRUCTOR'): Promise<AuthUser> {
   const user = await getCurrentUser();
-  if (!user) redirect(role === 'mentor' ? '/admin/login' : '/login');
-  if (user.role !== role) redirect(user.role === 'mentor' ? '/admin' : '/dashboard');
+  const userIsMentor = user?.role === 'INSTRUCTOR' || user?.role === 'ADMIN';
+  if (!user) redirect(role === 'INSTRUCTOR' ? '/admin/login' : '/login');
+  if (role === 'STUDENT' ? user.role !== 'STUDENT' : !userIsMentor) {
+    redirect(userIsMentor ? '/admin' : '/dashboard');
+  }
   return user;
 }

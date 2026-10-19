@@ -12,8 +12,22 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1792078085690,
-      "tag": "0001_damp_madame_hydra",
+      "when": 1791995628853,
+      "tag": "0001_smart_zombie",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792313362360,
+      "tag": "0002_futuristic_ironclad",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792394694272,
+      "tag": "0003_loose_captain_cross",
       "breakpoints": true
     }
   ]
