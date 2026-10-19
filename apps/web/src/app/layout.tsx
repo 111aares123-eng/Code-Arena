@@ -26,20 +26,25 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100 font-sans selection:bg-indigo-500 selection:text-white">
+      <body className="min-h-full flex flex-col bg-[#F5F1E8] text-[#252D25] font-sans selection:bg-[#879B7A]/35 selection:text-[#252D25]">
         <Navbar />
         <div className="flex-1 flex flex-col">{children}</div>
-        <footer className="border-t border-zinc-900 bg-zinc-950 py-6 text-center text-xs text-zinc-500">
-          <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div>
-              <span>CodeArena 2.0</span> • Built for College Competitive Programmers
+        <footer className="border-t border-[#252D25]/10 bg-[#E8E2D6] py-6 text-xs text-[#526052]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-[#252D25]">CodeArena 2.0</span>
+              <span className="text-[#879B7A]">•</span>
+              <span className="text-[#526052]">Built for College Competitive Programmers</span>
             </div>
-            <div className="flex items-center gap-4 text-zinc-400">
-              <span>Python & C++</span>
-              <span>•</span>
-              <span>Judge0 CE Integration Ready</span>
+            <div className="flex items-center gap-3 text-[#526052]">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#252D25]/10 bg-[#F5F1E8] text-[11px] font-mono text-[#252D25]">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                Python & C++
+              </span>
+              <span className="text-[#879B7A]">•</span>
+              <span className="text-[#526052]">Judge0 CE Integration Ready</span>
             </div>
           </div>
         </footer>

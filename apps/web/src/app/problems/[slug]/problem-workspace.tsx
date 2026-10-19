@@ -22,19 +22,19 @@ const MonacoCodeEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex flex-col h-full bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between px-3.5 py-2.5 bg-zinc-900 border-b border-zinc-800">
-          <div className="h-5 w-28 bg-zinc-800 rounded animate-pulse" />
+      <div className="flex flex-col h-full bg-[#0c121d] border border-white/[0.08] rounded-xl overflow-hidden shadow-xl">
+        <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#080c14] border-b border-white/[0.08]">
+          <div className="h-5 w-28 bg-white/[0.06] rounded animate-pulse" />
           <div className="flex gap-2">
-            <div className="h-7 w-20 bg-zinc-800 rounded animate-pulse" />
-            <div className="h-7 w-16 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-7 w-20 bg-white/[0.06] rounded animate-pulse" />
+            <div className="h-7 w-16 bg-white/[0.06] rounded animate-pulse" />
           </div>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-500 font-mono text-xs space-y-3">
-          <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex-1 flex flex-col items-center justify-center bg-[#080c14] p-6 text-slate-500 font-mono text-xs space-y-3">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           <span>Initializing Monaco Code Editor...</span>
         </div>
-        <div className="h-6 bg-zinc-900 border-t border-zinc-800" />
+        <div className="h-6 bg-[#080c14] border-t border-white/[0.08]" />
       </div>
     ),
   }
@@ -163,23 +163,23 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="flex flex-col min-h-screen bg-[#080c14] text-slate-100">
       {/* Top Workspace Bar */}
-      <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-md px-4 sm:px-6 py-3">
+      <header className="sticky top-0 z-20 border-b border-white/[0.08] bg-[#080c14]/90 backdrop-blur-md px-4 sm:px-6 py-3">
         <div className="mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/problems"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-400 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-zinc-800/80 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-white/[0.05] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
             >
               <span aria-hidden="true">←</span>
               <span className="hidden sm:inline">Problems</span>
             </Link>
 
-            <span className="text-zinc-700 hidden sm:inline">/</span>
+            <span className="text-slate-600 hidden sm:inline">/</span>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
+              <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-[#0c121d] text-slate-300 border border-white/[0.08]">
                 {problem.id}
               </span>
               <h1 className="text-sm sm:text-base font-bold text-white truncate max-w-[200px] sm:max-w-md">
@@ -192,32 +192,32 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
           <div className="flex items-center gap-3">
             {source === 'api' ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 PostgreSQL Live
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium bg-[#0c121d] text-slate-400 border border-white/[0.08]">
                 Mock Fallback
               </span>
             )}
 
-            <div className="hidden md:flex items-center gap-3 text-xs text-zinc-400">
+            <div className="hidden md:flex items-center gap-3 text-xs text-slate-400">
               <span>
-                Acceptance: <strong className="text-zinc-200">{problem.acceptanceRate}</strong>
+                Acceptance: <strong className="text-slate-200">{problem.acceptanceRate}</strong>
               </span>
             </div>
           </div>
         </div>
 
         {/* Mobile View Navigation Tabs (< lg screens) */}
-        <div className="flex lg:hidden items-center gap-1 mt-3 pt-2 border-t border-zinc-800/80">
+        <div className="flex lg:hidden items-center gap-1 mt-3 pt-2 border-t border-white/[0.08]">
           <button
             type="button"
             onClick={() => setMobileTab('description')}
             className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors text-center ${
               mobileTab === 'description'
-                ? 'bg-zinc-800 text-white font-semibold'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                ? 'bg-white/[0.08] text-white font-semibold'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
             Description
@@ -227,8 +227,8 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
             onClick={() => setMobileTab('editor')}
             className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors text-center ${
               mobileTab === 'editor'
-                ? 'bg-zinc-800 text-white font-semibold'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                ? 'bg-white/[0.08] text-white font-semibold'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
             Code Editor
@@ -238,8 +238,8 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
             onClick={() => setMobileTab('testcases')}
             className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors text-center ${
               mobileTab === 'testcases'
-                ? 'bg-zinc-800 text-white font-semibold'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                ? 'bg-white/[0.08] text-white font-semibold'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
             Test Cases & Console
@@ -257,14 +257,14 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
               mobileTab === 'description' ? 'block' : 'hidden lg:flex'
             }`}
           >
-            <div className="flex-1 bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 sm:p-6 overflow-y-auto space-y-6 shadow-xl">
+            <div className="flex-1 bg-[#0c121d] border border-white/[0.08] rounded-xl p-5 sm:p-6 overflow-y-auto space-y-6 shadow-sm">
               {/* Problem Metadata Header */}
-              <div className="border-b border-zinc-800 pb-4">
+              <div className="border-b border-white/[0.08] pb-4">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="text-xs text-zinc-400 font-medium">{problem.category}</span>
-                  <span className="text-zinc-600">•</span>
-                  <span className="text-xs text-zinc-400">
-                    Submissions: <strong className="text-zinc-200">{problem.totalSubmissions.toLocaleString()}</strong>
+                  <span className="text-xs text-slate-400 font-medium">{problem.category}</span>
+                  <span className="text-slate-600">•</span>
+                  <span className="text-xs text-slate-400">
+                    Submissions: <strong className="text-slate-200">{problem.totalSubmissions.toLocaleString()}</strong>
                   </span>
                 </div>
 
@@ -277,7 +277,7 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
                   {problem.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-800/90 text-zinc-300 border border-zinc-700/60"
+                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-white/[0.04] text-slate-300 border border-white/[0.08]"
                     >
                       {tag}
                     </span>
@@ -287,42 +287,42 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
 
               {/* Statement Description */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Problem Description
                 </h3>
-                <div className="text-sm text-zinc-300 leading-relaxed whitespace-pre-line prose prose-invert max-w-none">
+                <div className="text-sm text-slate-300 leading-relaxed whitespace-pre-line prose prose-invert max-w-none">
                   {problem.description}
                 </div>
               </div>
 
               {/* Examples */}
               <div className="space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Examples
                 </h3>
                 <div className="space-y-3">
                   {problem.examples.map((example) => (
                     <div
                       key={example.id}
-                      className="rounded-xl border border-zinc-800 bg-zinc-950/70 p-3.5 font-mono text-xs"
+                      className="rounded-xl border border-white/[0.08] bg-[#080c14]/70 p-3.5 font-mono text-xs"
                     >
-                      <div className="text-zinc-400 font-semibold mb-2">Example {example.id}:</div>
-                      <div className="space-y-1.5 text-zinc-300">
+                      <div className="text-slate-400 font-semibold mb-2">Example {example.id}:</div>
+                      <div className="space-y-1.5 text-slate-300">
                         <div>
-                          <span className="text-zinc-500 font-bold">Input: </span>
-                          <code className="text-emerald-400 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
+                          <span className="text-slate-500 font-bold">Input: </span>
+                          <code className="text-emerald-400 bg-[#0c121d] px-1.5 py-0.5 rounded border border-white/[0.08]">
                             {example.input}
                           </code>
                         </div>
                         <div>
-                          <span className="text-zinc-500 font-bold">Output: </span>
-                          <code className="text-indigo-400 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
+                          <span className="text-slate-500 font-bold">Output: </span>
+                          <code className="text-blue-300 bg-[#0c121d] px-1.5 py-0.5 rounded border border-white/[0.08]">
                             {example.output}
                           </code>
                         </div>
                         {example.explanation && (
-                          <div className="pt-1.5 text-zinc-400 font-sans text-xs">
-                            <span className="font-semibold text-zinc-300">Explanation: </span>
+                          <div className="pt-1.5 text-slate-400 font-sans text-xs">
+                            <span className="font-semibold text-slate-300">Explanation: </span>
                             {example.explanation}
                           </div>
                         )}
@@ -334,13 +334,13 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
 
               {/* Constraints */}
               <div className="space-y-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Constraints
                 </h3>
-                <ul className="list-disc list-inside space-y-1 text-xs text-zinc-300 bg-zinc-950/50 p-3.5 rounded-xl border border-zinc-800 font-mono">
+                <ul className="list-disc list-inside space-y-1 text-xs text-slate-300 bg-[#080c14]/50 p-3.5 rounded-xl border border-white/[0.08] font-mono">
                   {problem.constraints.map((constraint, idx) => (
-                    <li key={idx} className="text-zinc-300">
-                      <code className="text-zinc-200">{constraint}</code>
+                    <li key={idx} className="text-slate-300">
+                      <code className="text-slate-200">{constraint}</code>
                     </li>
                   ))}
                 </ul>
@@ -349,19 +349,19 @@ export function ProblemWorkspace({ problem, source }: ProblemWorkspaceProps) {
               {/* Hints if present */}
               {problem.hints && problem.hints.length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Hints
                   </h3>
                   <div className="space-y-2">
                     {problem.hints.map((hint, idx) => (
                       <details
                         key={idx}
-                        className="group rounded-lg border border-zinc-800 bg-zinc-950/40 p-3 text-xs text-zinc-300"
+                        className="group rounded-lg border border-white/[0.08] bg-[#080c14]/40 p-3 text-xs text-slate-300"
                       >
-                        <summary className="font-medium text-zinc-400 group-hover:text-indigo-300 cursor-pointer select-none">
+                        <summary className="font-medium text-slate-400 group-hover:text-blue-300 cursor-pointer select-none">
                           Hint {idx + 1}
                         </summary>
-                        <p className="mt-2 text-zinc-300 pl-2 border-l border-zinc-700 leading-relaxed">
+                        <p className="mt-2 text-slate-300 pl-2 border-l border-white/[0.1] leading-relaxed">
                           {hint}
                         </p>
                       </details>

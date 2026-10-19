@@ -10,8 +10,8 @@ export function EmptyState({
   onReset,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-800/80 text-zinc-400 mb-4 ring-1 ring-zinc-700/50">
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-dashed border-[#252D25]/15 rounded-2xl bg-[#E8E2D6]">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#DDE5D5] text-[#526052] mb-4 ring-1 ring-[#252D25]/10">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -29,14 +29,14 @@ export function EmptyState({
         </svg>
       </div>
 
-      <h3 className="text-lg font-semibold text-zinc-200">{title}</h3>
-      <p className="mt-1.5 max-w-sm text-sm text-zinc-400">{description}</p>
+      <h3 className="text-lg font-semibold text-[#252D25]">{title}</h3>
+      <p className="mt-1.5 max-w-sm text-sm text-[#526052] leading-relaxed">{description}</p>
 
       {onReset && (
         <button
           type="button"
           onClick={onReset}
-          className="mt-5 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-zinc-200 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-colors cursor-pointer"
+          className="mt-5 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#F5F1E8] bg-[#344E41] hover:bg-[#25382E] border border-[#344E41] rounded-lg transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#344E41] active:scale-[0.98] cursor-pointer"
         >
           Reset Filters
         </button>

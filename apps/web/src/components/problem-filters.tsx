@@ -32,12 +32,12 @@ export function ProblemFilters({
   const hasActiveFilters = searchQuery !== '' || selectedDifficulty !== 'ALL' || selectedTag !== '';
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-5">
+    <div className="flex flex-col gap-3.5 sm:gap-4 rounded-xl border border-[#252D25]/10 bg-[#E8E2D6] p-3.5 sm:p-4 shadow-xs">
       {/* Top row: Search input + Tag filter dropdown */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search Bar */}
         <div className="relative flex-1">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#526052]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -60,13 +60,13 @@ export function ProblemFilters({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search problems by title, keywords, or tags..."
-            className="w-full rounded-lg border border-zinc-700/80 bg-zinc-950/80 pl-10 pr-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+            className="w-full rounded-lg border border-[#252D25]/15 bg-[#FDFBF7] pl-10 pr-9 py-2 text-sm text-[#252D25] placeholder-[#526052]/70 focus:border-[#344E41] focus:ring-1 focus:ring-[#344E41] focus:outline-none transition-colors"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 hover:text-zinc-300"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#526052] hover:text-[#252D25] transition-colors cursor-pointer"
               aria-label="Clear search"
             >
               <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -89,7 +89,7 @@ export function ProblemFilters({
             id="tag-filter"
             value={selectedTag}
             onChange={(e) => onTagChange(e.target.value)}
-            className="w-full rounded-lg border border-zinc-700/80 bg-zinc-950/80 px-3.5 py-2 text-sm text-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+            className="w-full rounded-lg border border-[#252D25]/15 bg-[#FDFBF7] px-3.5 py-2 text-sm text-[#252D25] focus:border-[#344E41] focus:ring-1 focus:ring-[#344E41] focus:outline-none transition-colors cursor-pointer"
           >
             <option value="">All Topics ({availableTags.length})</option>
             {availableTags.map((tag) => (
@@ -102,18 +102,18 @@ export function ProblemFilters({
       </div>
 
       {/* Bottom row: Difficulty tabs + Results count */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-zinc-800/80">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#252D25]/10">
         <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label="Difficulty Filter">
-          <span className="text-xs text-zinc-400 font-medium mr-1 hidden sm:inline">Difficulty:</span>
+          <span className="text-xs text-[#526052] font-medium mr-1 hidden sm:inline">Difficulty:</span>
           {difficulties.map((diff) => {
             const isSelected = selectedDifficulty === diff;
-            let activeColor = 'bg-zinc-800 text-zinc-100 border-zinc-600';
+            let activeColor = 'bg-[#344E41] text-[#F5F1E8] border-[#344E41]';
 
             if (isSelected) {
-              if (diff === 'Easy') activeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50';
-              else if (diff === 'Medium') activeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/50';
-              else if (diff === 'Hard') activeColor = 'bg-rose-500/20 text-rose-300 border-rose-500/50';
-              else activeColor = 'bg-indigo-600 text-white border-indigo-500';
+              if (diff === 'Easy') activeColor = 'bg-emerald-800/15 text-emerald-800 border-emerald-700/35';
+              else if (diff === 'Medium') activeColor = 'bg-amber-800/15 text-amber-900 border-amber-700/35';
+              else if (diff === 'Hard') activeColor = 'bg-rose-800/15 text-rose-900 border-rose-700/35';
+              else activeColor = 'bg-[#344E41] text-[#F5F1E8] border-[#344E41]';
             }
 
             return (
@@ -121,10 +121,10 @@ export function ProblemFilters({
                 key={diff}
                 type="button"
                 onClick={() => onDifficultyChange(diff)}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#344E41] ${
                   isSelected
                     ? activeColor
-                    : 'bg-zinc-950/50 text-zinc-400 border-zinc-800 hover:text-zinc-200 hover:bg-zinc-850'
+                    : 'bg-[#F5F1E8] text-[#526052] border-[#252D25]/10 hover:text-[#252D25] hover:bg-[#DDE5D5]/60 hover:border-[#252D25]/20'
                 }`}
               >
                 {diff}
@@ -133,17 +133,17 @@ export function ProblemFilters({
           })}
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-zinc-400">
+        <div className="flex items-center gap-3 text-xs text-[#526052]">
           <span>
-            Showing <strong className="text-zinc-200">{totalResults}</strong> of{' '}
-            <strong className="text-zinc-200">{totalProblems}</strong> problems
+            Showing <strong className="text-[#252D25] font-mono font-semibold">{totalResults}</strong> of{' '}
+            <strong className="text-[#252D25] font-mono font-semibold">{totalProblems}</strong> problems
           </span>
 
           {hasActiveFilters && (
             <button
               type="button"
               onClick={onReset}
-              className="text-xs font-medium text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
+              className="text-xs font-semibold text-[#344E41] hover:text-[#25382E] hover:underline cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#344E41] rounded"
             >
               Clear
             </button>

@@ -11,19 +11,19 @@ export const metadata: Metadata = {
 
 function ProblemListSkeleton() {
   return (
-    <div className="flex flex-col gap-8 animate-pulse">
+    <div className="flex flex-col gap-6 sm:gap-7 animate-pulse">
       {/* Stats Skeleton */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-20 rounded-xl bg-zinc-900/60 border border-zinc-800/80" />
+          <div key={i} className="h-20 rounded-xl bg-[#E8E2D6] border border-[#252D25]/10" />
         ))}
       </div>
       {/* Filter Bar Skeleton */}
-      <div className="h-28 rounded-xl bg-zinc-900/40 border border-zinc-800/80" />
-      {/* Cards Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-44 rounded-xl bg-zinc-900/50 border border-zinc-800/80" />
+      <div className="h-24 rounded-xl bg-[#E8E2D6] border border-[#252D25]/10" />
+      {/* Single-Column List Skeleton */}
+      <div className="rounded-xl border border-[#252D25]/10 bg-[#E8E2D6] overflow-hidden divide-y divide-[#252D25]/10">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="h-14 px-5 py-3 bg-[#E8E2D6]" />
         ))}
       </div>
     </div>
@@ -44,12 +44,12 @@ async function ProblemListSection() {
     <div>
       <div className="flex items-center gap-2 mb-6">
         {problemData.source === 'api' ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-800/10 text-emerald-800 border border-emerald-700/25 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-700" />
             PostgreSQL Live Connected
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-800/80 text-zinc-400 border border-zinc-700/60">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#E8E2D6] text-[#526052] border border-[#252D25]/15 font-mono">
             Fallback Dataset
           </span>
         )}
@@ -66,18 +66,18 @@ async function ProblemListSection() {
 
 export default function ProblemsPage() {
   return (
-    <div className="flex-1 bg-zinc-950 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="flex-1 py-10 px-4 sm:px-6 lg:px-8 animate-fade-in">
       <main className="mx-auto max-w-7xl">
         {/* Header Section */}
         <header className="mb-8">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E8E2D6] text-[#344E41] border border-[#252D25]/15 mb-3 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#344E41]" />
             Problem Library
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#252D25]">
             Algorithmic Challenges
           </h1>
-          <p className="mt-2 text-base text-zinc-400 max-w-2xl">
+          <p className="mt-2 text-base text-[#526052] max-w-2xl leading-relaxed">
             Master data structures and algorithms with interactive problems designed for college competitive programming.
           </p>
         </header>

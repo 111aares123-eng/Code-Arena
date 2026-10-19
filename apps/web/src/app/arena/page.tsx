@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function ArenaPage() {
-  return <ArenaDashboard />;
+  return (
+    <div className="flex-1 animate-fade-in">
+      <ArenaDashboard />
+    </div>
+  );
 }

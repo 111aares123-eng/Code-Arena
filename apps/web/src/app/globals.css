@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F5F1E8;
+  --foreground: #252D25;
+  --surface-base: #E8E2D6;
+  --surface-elevated: #DDE5D5;
+  --surface-hover: #D5DEC9;
+  --border-subtle: rgb(37 45 37 / 0.10);
+  --border-strong: rgb(37 45 37 / 0.20);
+  --accent-forest: #344E41;
+  --accent-sage: #879B7A;
 }
 
 @theme inline {
@@ -12,33 +19,103 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  background-repeat: no-repeat;
+}
+
+/* Custom Selection */
+::selection {
+  background-color: rgb(135 155 122 / 0.35);
+  color: #252D25;
+}
+
+/* Refined Subtle Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5F1E8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C8D1C3;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #879B7A;
+}
+
+/* Focus Visibility */
+:focus-visible {
+  outline: 2px solid #344E41;
+  outline-offset: 2px;
+}
+
+/* Motion Primitives (150ms-200ms, restrained easing) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+@keyframes verdictPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-verdict-pop {
+  animation: verdictPop 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Subtle background utilities for esports depth */
 .arena-shell {
-  background:
-    radial-gradient(ellipse at 15% 0%, rgb(79 70 229 / 0.08), transparent 32rem),
-    #090d14;
+  background-color: var(--background);
 }
 
 .arena-hero {
-  background-image: radial-gradient(ellipse at 90% 5%, rgb(99 102 241 / 0.14), transparent 28rem);
+  background-color: var(--surface-base);
 }
 
 .arena-grid {
-  background-image: linear-gradient(rgb(148 163 184 / 0.055) 1px, transparent 1px), linear-gradient(90deg, rgb(148 163 184 / 0.055) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgb(37 45 37 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(37 45 37 / 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
-  mask-image: linear-gradient(to right, black, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 30%, black, transparent 80%);
 }
 
 @media (prefers-reduced-motion: reduce) {

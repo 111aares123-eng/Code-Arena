@@ -51,17 +51,17 @@ export function TestCasesPanel({
   const currentEvaluation = getEvaluationForCurrentCase();
 
   return (
-    <div className="flex flex-col h-full bg-zinc-900/90 border border-zinc-800 rounded-xl overflow-hidden shadow-lg">
+    <div className="flex flex-col h-full bg-[#0c121d] border border-white/[0.08] rounded-xl overflow-hidden shadow-lg">
       {/* Header Tabs */}
-      <div className="flex items-center justify-between px-3 py-2 bg-zinc-900 border-b border-zinc-800 select-none">
+      <div className="flex items-center justify-between px-3 py-2 bg-[#080c14]/90 border-b border-white/[0.08] select-none">
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => onTabChange('testcases')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
               activeTab === 'testcases'
-                ? 'bg-zinc-800 text-white font-semibold shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                ? 'bg-white/[0.08] text-white font-semibold shadow-xs'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
             <svg
@@ -75,7 +75,7 @@ export function TestCasesPanel({
             </svg>
             <span>Test Cases</span>
             {examples.length > 0 && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-zinc-700/80 text-zinc-300">
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/[0.06] border border-white/[0.08] text-slate-300">
                 {examples.length}
               </span>
             )}
@@ -84,14 +84,14 @@ export function TestCasesPanel({
           <button
             type="button"
             onClick={() => onTabChange('console')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
               activeTab === 'console'
-                ? 'bg-zinc-800 text-white font-semibold shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                ? 'bg-white/[0.08] text-white font-semibold shadow-xs'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
             }`}
           >
             <svg
-              className="w-3.5 h-3.5 text-indigo-400"
+              className="w-3.5 h-3.5 text-blue-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -101,19 +101,19 @@ export function TestCasesPanel({
             </svg>
             <span>Console</span>
             {(isRunning || isSubmitting) && (
-              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
+              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
             )}
           </button>
         </div>
 
         <div className="flex items-center gap-3">
           {(isRunning || isSubmitting) && (
-            <div className="flex items-center gap-1.5 text-xs text-indigo-400 font-mono">
-              <div className="w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+            <div className="flex items-center gap-1.5 text-xs text-blue-400 font-mono animate-fade-in">
+              <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
               <span>{isRunning ? 'Running...' : 'Submitting...'}</span>
             </div>
           )}
-          <span className="text-[11px] text-zinc-500 font-mono hidden sm:inline">
+          <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
             Active: {activeLanguageName}
           </span>
         </div>
@@ -124,13 +124,13 @@ export function TestCasesPanel({
         {activeTab === 'testcases' ? (
           <div>
             {examples.length === 0 ? (
-              <div className="text-xs text-zinc-500 italic py-6 text-center">
+              <div className="text-xs text-slate-500 italic py-6 text-center">
                 No sample test cases available for this problem.
               </div>
             ) : (
               <div className="space-y-3.5">
                 {/* Case selector pills */}
-                <div className="flex items-center justify-between gap-2 border-b border-zinc-800/80 pb-2">
+                <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] pb-2">
                   <div className="flex items-center gap-1.5 overflow-x-auto">
                     {examples.map((ex, idx) => {
                       const caseEval = lastSubmitResult?.evaluations?.find((e) => e.caseIndex === idx) ||
@@ -141,16 +141,16 @@ export function TestCasesPanel({
                           key={ex.id || idx}
                           type="button"
                           onClick={() => onSelectCaseIndex(idx)}
-                          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150 flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 ${
                             selectedCaseIndex === idx
-                              ? 'bg-zinc-800 text-indigo-300 border border-indigo-500/40'
-                              : 'bg-zinc-950/60 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80 hover:bg-zinc-800/40'
+                              ? 'bg-blue-600/15 text-blue-300 border border-blue-500/30'
+                              : 'bg-[#080c14] text-slate-400 hover:text-white border border-white/[0.08] hover:bg-white/[0.04]'
                           }`}
                         >
                           <span>Case {idx + 1}</span>
                           {caseEval && (
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${
+                              className={`w-1.5 h-1.5 rounded-full transition-all duration-150 ${
                                 caseEval.isMatched ? 'bg-emerald-400' : 'bg-rose-400'
                               }`}
                               title={caseEval.isMatched ? 'Passed' : 'Failed'}
@@ -165,7 +165,7 @@ export function TestCasesPanel({
                     type="button"
                     onClick={onRunCurrentCase}
                     disabled={isRunning || isSubmitting}
-                    className="text-[11px] font-semibold text-zinc-300 hover:text-white px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 transition-colors shrink-0 flex items-center gap-1"
+                    className="text-[11px] font-semibold text-slate-200 hover:text-white px-2.5 py-1 rounded-md bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 shrink-0 flex items-center gap-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500"
                   >
                     <span>Run Case {selectedCaseIndex + 1}</span>
                   </button>
@@ -175,30 +175,30 @@ export function TestCasesPanel({
                   <div className="space-y-3 text-xs">
                     {/* Input */}
                     <div>
-                      <div className="text-zinc-400 font-medium mb-1">Input</div>
-                      <pre className="font-mono bg-zinc-950 p-2.5 rounded-lg border border-zinc-800/90 text-zinc-300 overflow-x-auto whitespace-pre-wrap select-all">
+                      <div className="text-slate-400 font-medium mb-1">Input</div>
+                      <pre className="font-mono bg-[#080c14] p-2.5 rounded-lg border border-white/[0.08] text-slate-200 overflow-x-auto whitespace-pre-wrap select-all">
                         <code>{currentExample.input}</code>
                       </pre>
                     </div>
 
                     {/* Expected Output */}
                     <div>
-                      <div className="text-zinc-400 font-medium mb-1">Expected Output</div>
-                      <pre className="font-mono bg-zinc-950 p-2.5 rounded-lg border border-zinc-800/90 text-indigo-300 overflow-x-auto whitespace-pre-wrap select-all">
+                      <div className="text-slate-400 font-medium mb-1">Expected Output</div>
+                      <pre className="font-mono bg-[#080c14] p-2.5 rounded-lg border border-white/[0.08] text-blue-300 overflow-x-auto whitespace-pre-wrap select-all">
                         <code>{currentExample.output}</code>
                       </pre>
                     </div>
 
                     {/* Actual Output (if evaluated) */}
                     {currentEvaluation ? (
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-zinc-400 font-medium">Actual Output</span>
+                      <div className="animate-fade-in space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400 font-medium">Actual Output</span>
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 ${
                               currentEvaluation.isMatched
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                             }`}
                           >
                             <span>{currentEvaluation.isMatched ? '✓ Match (Passed)' : '✗ Mismatch (Failed)'}</span>
@@ -207,41 +207,41 @@ export function TestCasesPanel({
                         <pre
                           className={`font-mono p-2.5 rounded-lg border overflow-x-auto whitespace-pre-wrap select-all ${
                             currentEvaluation.isMatched
-                              ? 'bg-zinc-950 border-emerald-500/40 text-emerald-300'
-                              : 'bg-zinc-950 border-rose-500/40 text-rose-300'
+                              ? 'bg-[#080c14] border-emerald-500/30 text-emerald-300'
+                              : 'bg-[#080c14] border-rose-500/30 text-rose-300'
                           }`}
                         >
                           <code>{currentEvaluation.actualOutput || '<No output produced>'}</code>
                         </pre>
                         {currentEvaluation.compileOutput && (
-                          <div className="mt-2 p-2.5 rounded-lg bg-rose-950/40 border border-rose-800 text-rose-300 font-mono text-[11px] whitespace-pre-wrap">
+                          <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-900/50 text-rose-300 font-mono text-[11px] whitespace-pre-wrap">
                             <span className="font-bold">Compile Output:</span>
                             <div>{currentEvaluation.compileOutput}</div>
                           </div>
                         )}
                         {currentEvaluation.stderr && (
-                          <div className="mt-2 p-2.5 rounded-lg bg-rose-950/40 border border-rose-800 text-rose-300 font-mono text-[11px] whitespace-pre-wrap">
+                          <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-900/50 text-rose-300 font-mono text-[11px] whitespace-pre-wrap">
                             <span className="font-bold">Standard Error:</span>
                             <div>{currentEvaluation.stderr}</div>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="p-2.5 rounded-lg bg-zinc-950/40 border border-zinc-800/60 text-zinc-500 text-[11px]">
+                      <div className="p-2.5 rounded-lg bg-[#080c14]/60 border border-white/[0.06] text-slate-400 text-[11px]">
                         ℹ️ This case has not been executed yet. Click <strong>Run</strong> or <strong>Submit</strong> to evaluate in Judge0.
                       </div>
                     )}
 
                     {/* Explanation */}
                     {currentExample.explanation && (
-                      <div className="p-2.5 rounded-lg bg-zinc-950/50 border border-zinc-800/60 text-zinc-400 leading-relaxed">
-                        <span className="font-semibold text-zinc-300">Explanation: </span>
+                      <div className="p-2.5 rounded-lg bg-[#080c14]/60 border border-white/[0.06] text-slate-400 leading-relaxed">
+                        <span className="font-semibold text-slate-300">Explanation: </span>
                         {currentExample.explanation}
                       </div>
                     )}
 
                     {/* Disclaimer */}
-                    <div className="text-[10px] text-zinc-500 border-t border-zinc-800/60 pt-2">
+                    <div className="text-[10px] text-slate-500 border-t border-white/[0.08] pt-2">
                       ⚠️ Sample test cases are public examples. A solution passing all sample cases may still fail hidden judge test cases.
                     </div>
                   </div>
@@ -255,13 +255,13 @@ export function TestCasesPanel({
             <div className="space-y-3">
               {/* If request is in flight */}
               {(isRunning || isSubmitting) && (
-                <div className="p-3.5 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 flex items-center gap-3">
-                  <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin shrink-0" />
+                <div className="p-3.5 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-300 flex items-center gap-3 animate-slide-up">
+                  <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin shrink-0" />
                   <div>
                     <div className="font-semibold text-white">
                       {isRunning ? 'Executing Code via Judge0 CE...' : 'Submitting Code via Judge0 CE...'}
                     </div>
-                    <div className="text-[11px] text-indigo-200/80 mt-0.5">
+                    <div className="text-[11px] text-blue-200/80 mt-0.5">
                       Submitting sandbox task to backend execution pipeline.
                     </div>
                   </div>
@@ -271,12 +271,12 @@ export function TestCasesPanel({
               {/* Submission Verdict Banner */}
               {lastSubmitResult && !isSubmitting && (
                 <div
-                  className={`p-3.5 rounded-lg border leading-relaxed ${
+                  className={`p-3.5 rounded-lg border leading-relaxed animate-verdict-pop ${
                     lastSubmitResult.verdict === 'ACCEPTED' || lastSubmitResult.verdict === 'SAMPLE_PASSED'
-                      ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
                       : lastSubmitResult.verdict === 'SERVICE_UNAVAILABLE'
-                      ? 'border-amber-500/40 bg-amber-500/10 text-amber-300'
-                      : 'border-rose-500/40 bg-rose-500/10 text-rose-300'
+                      ? 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+                      : 'border-rose-500/30 bg-rose-500/10 text-rose-300'
                   }`}
                 >
                   <div className="flex items-center justify-between font-bold text-sm mb-1">
@@ -289,7 +289,7 @@ export function TestCasesPanel({
                         ? '⚠️ EXECUTION SERVICE UNAVAILABLE'
                         : `❌ VERDICT: ${lastSubmitResult.verdict.replace(/_/g, ' ')}`}
                     </span>
-                    <span className="text-xs px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-300">
+                    <span className="text-xs px-2 py-0.5 rounded bg-[#080c14] border border-white/[0.1] text-slate-200">
                       {lastSubmitResult.passedCases}/{lastSubmitResult.totalCases} Passed
                     </span>
                   </div>
@@ -310,7 +310,7 @@ export function TestCasesPanel({
                       : 'Close, but not there yet. Check the test case outcomes and trace your logic.'}
                   </p>
                   {lastSubmitResult.hiddenCases && (
-                    <div className="mt-2 text-[11px] text-zinc-400 font-mono">
+                    <div className="mt-2 text-[11px] text-slate-400 font-mono">
                       Hidden Test Cases: {lastSubmitResult.hiddenCases.passed}/{lastSubmitResult.hiddenCases.total} Passed
                     </div>
                   )}
@@ -325,7 +325,7 @@ export function TestCasesPanel({
                 (lastSubmitResult && !lastSubmitResult.judge0Available)) &&
                 !isRunning &&
                 !isSubmitting && (
-                  <div className="p-3.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 leading-relaxed">
+                  <div className="p-3.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 leading-relaxed animate-fade-in">
                     <div className="flex items-center gap-2 font-bold mb-1">
                       <svg className="w-4 h-4 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -339,20 +339,20 @@ export function TestCasesPanel({
                     <p className="text-[11px] text-amber-200/90 mb-2">
                       {lastRunResult?.error || lastSubmitResult?.error || 'Could not connect to Judge0 CE instance.'}
                     </p>
-                    <div className="p-2.5 rounded bg-zinc-950 border border-zinc-800 text-[11px] text-zinc-300 space-y-1">
-                      <div className="text-zinc-400 font-semibold">How to connect Judge0 CE:</div>
-                      <div>• Start Judge0 via Docker: <code className="text-indigo-400 bg-zinc-900 px-1 py-0.5 rounded">docker run -p 2358:2358 judge0/judge0:latest</code></div>
-                      <div>• Or set <code className="text-indigo-400 bg-zinc-900 px-1 py-0.5 rounded">JUDGE0_BASE_URL</code> in environment variables.</div>
+                    <div className="p-2.5 rounded bg-[#080c14] border border-white/[0.08] text-[11px] text-slate-300 space-y-1">
+                      <div className="text-slate-400 font-semibold">How to connect Judge0 CE:</div>
+                      <div>• Start Judge0 via Docker: <code className="text-blue-300 bg-[#0c121d] px-1 py-0.5 rounded border border-white/[0.08]">docker run -p 2358:2358 judge0/judge0:latest</code></div>
+                      <div>• Or set <code className="text-blue-300 bg-[#0c121d] px-1 py-0.5 rounded border border-white/[0.08]">JUDGE0_BASE_URL</code> in environment variables.</div>
                     </div>
                   </div>
                 )}
 
               {/* Run Code Result Console View */}
               {lastRunResult && lastRunResult.judge0Available && lastRunResult.result && !isRunning && (
-                <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-3 space-y-2.5">
-                  <div className="flex items-center justify-between text-[11px] border-b border-zinc-800/80 pb-2">
+                <div className="bg-[#080c14] rounded-lg border border-white/[0.08] p-3 space-y-2.5 animate-fade-in">
+                  <div className="flex items-center justify-between text-[11px] border-b border-white/[0.08] pb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-zinc-400 font-bold">Status:</span>
+                      <span className="text-slate-400 font-bold">Status:</span>
                       <span
                         className={`px-2 py-0.5 rounded font-semibold text-[10px] ${
                           lastRunResult.result.isError
@@ -363,7 +363,7 @@ export function TestCasesPanel({
                         {lastRunResult.result.status.description}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-zinc-500">
+                    <div className="flex items-center gap-3 text-slate-500">
                       {lastRunResult.result.time && <span>Time: {lastRunResult.result.time}s</span>}
                       {lastRunResult.result.memory && <span>Mem: {lastRunResult.result.memory} KB</span>}
                     </div>
@@ -372,8 +372,8 @@ export function TestCasesPanel({
                   {/* Standard Output */}
                   {lastRunResult.result.stdout !== null && (
                     <div>
-                      <div className="text-zinc-400 text-[11px] mb-1 font-semibold">Standard Output:</div>
-                      <pre className="p-2.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-200 overflow-x-auto whitespace-pre-wrap">
+                      <div className="text-slate-400 text-[11px] mb-1 font-semibold">Standard Output:</div>
+                      <pre className="p-2.5 rounded bg-[#0c121d] border border-white/[0.06] text-slate-200 overflow-x-auto whitespace-pre-wrap">
                         <code>{lastRunResult.result.stdout || '<Empty stdout>'}</code>
                       </pre>
                     </div>
@@ -383,7 +383,7 @@ export function TestCasesPanel({
                   {lastRunResult.result.compileOutput && (
                     <div>
                       <div className="text-rose-400 text-[11px] mb-1 font-semibold">Compilation Output:</div>
-                      <pre className="p-2.5 rounded bg-rose-950/30 border border-rose-900/60 text-rose-300 overflow-x-auto whitespace-pre-wrap">
+                      <pre className="p-2.5 rounded bg-rose-950/30 border border-rose-900/50 text-rose-300 overflow-x-auto whitespace-pre-wrap">
                         <code>{lastRunResult.result.compileOutput}</code>
                       </pre>
                     </div>
@@ -393,7 +393,7 @@ export function TestCasesPanel({
                   {lastRunResult.result.stderr && (
                     <div>
                       <div className="text-rose-400 text-[11px] mb-1 font-semibold">Standard Error:</div>
-                      <pre className="p-2.5 rounded bg-rose-950/30 border border-rose-900/60 text-rose-300 overflow-x-auto whitespace-pre-wrap">
+                      <pre className="p-2.5 rounded bg-rose-950/30 border border-rose-900/50 text-rose-300 overflow-x-auto whitespace-pre-wrap">
                         <code>{lastRunResult.result.stderr}</code>
                       </pre>
                     </div>
@@ -403,12 +403,12 @@ export function TestCasesPanel({
 
               {/* Initial Ready State */}
               {!lastRunResult && !lastSubmitResult && !isRunning && !isSubmitting && (
-                <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-3 text-zinc-400 space-y-2">
-                  <div className="text-zinc-500 flex items-center justify-between text-[11px] border-b border-zinc-800/60 pb-1.5">
+                <div className="bg-[#080c14] rounded-lg border border-white/[0.08] p-3 text-slate-400 space-y-2">
+                  <div className="text-slate-500 flex items-center justify-between text-[11px] border-b border-white/[0.08] pb-1.5">
                     <span>CodeArena 2.0 In-Browser Console</span>
                     <span>Target: Judge0 CE</span>
                   </div>
-                  <div className="text-zinc-500 text-[11px] py-4 space-y-1">
+                  <div className="text-slate-500 text-[11px] py-4 space-y-1">
                     <div>$ ready for execution</div>
                     <div>$ press &quot;Run&quot; to test active test case in Judge0 sandbox</div>
                     <div>$ press &quot;Submit&quot; to evaluate all sample test cases</div>
@@ -417,7 +417,7 @@ export function TestCasesPanel({
               )}
             </div>
 
-            <div className="text-[10px] text-zinc-500 pt-2 border-t border-zinc-800/60">
+            <div className="text-[10px] text-slate-500 pt-2 border-t border-white/[0.08]">
               Interactive sandbox execution streams stdout, stderr, run time, and memory usage.
             </div>
           </div>

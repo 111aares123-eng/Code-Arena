@@ -8,57 +8,64 @@ interface ProblemCardProps {
 
 export function ProblemCard({ problem }: ProblemCardProps) {
   return (
-    <article className="group relative flex flex-col justify-between rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 hover:border-zinc-700 hover:bg-zinc-900/90 transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/5">
-      <div>
-        {/* Header: Title & Difficulty */}
-        <div className="flex items-start justify-between gap-3 mb-2.5">
-          <Link
-            href={`/problems/${problem.slug}`}
-            className="text-lg font-semibold text-zinc-100 group-hover:text-indigo-400 transition-colors"
-          >
+    <Link
+      href={`/problems/${problem.slug}`}
+      className="group flex items-center justify-between gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-3.5 hover:bg-[#E2DBD0]/60 focus-visible:bg-[#E2DBD0]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#344E41] active:bg-[#DDD6C8] transition-colors duration-150 ease-out"
+    >
+      {/* Left: Problem Title & Tags */}
+      <div className="flex-1 min-w-0 pr-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm sm:text-base font-semibold text-[#252D25] group-hover:text-[#344E41] transition-colors duration-150 ease-out truncate">
             {problem.title}
-          </Link>
-          <DifficultyBadge difficulty={problem.difficulty} />
+          </span>
         </div>
 
-        {/* Short description preview */}
-        <p className="text-sm text-zinc-400 line-clamp-2 mb-4 leading-relaxed">
-          {problem.shortDescription}
-        </p>
-
-        {/* Topic Tags */}
-        <div className="flex flex-wrap items-center gap-1.5 mb-4">
-          {problem.tags.map((tag) => (
+        {/* Secondary topic metadata */}
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          <span className="inline-flex items-center text-[10px] font-mono text-[#526052] bg-[#F5F1E8] px-1.5 py-0.2 rounded border border-[#252D25]/10">
+            {problem.category}
+          </span>
+          {problem.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-800/80 text-zinc-300 border border-zinc-700/50"
+              className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono text-[#526052] bg-[#F5F1E8] border border-[#252D25]/10"
             >
               {tag}
             </span>
           ))}
+          {problem.tags.length > 3 && (
+            <span className="text-[10px] font-mono text-[#526052]">
+              +{problem.tags.length - 3}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Footer Info: Acceptance, Supported Languages, Solve Button */}
-      <div className="pt-4 mt-auto border-t border-zinc-800/70 flex items-center justify-between text-xs text-zinc-400">
-        <div className="flex items-center gap-3">
-          <span>
-            Acc: <strong className="text-zinc-300">{problem.acceptanceRate}</strong>
-          </span>
-          <span className="hidden sm:inline">•</span>
-          <span className="hidden sm:inline">
-            <strong className="text-zinc-300">{problem.totalSubmissions.toLocaleString()}</strong> submissions
-          </span>
-        </div>
+      {/* Right: Acceptance, Difficulty, Navigation hint */}
+      <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+        {/* Real acceptance statistics */}
+        {problem.acceptanceRate && (
+          <div className="hidden sm:flex flex-col items-end text-right">
+            <span className="text-xs font-mono font-medium text-[#252D25]">
+              {problem.acceptanceRate}
+            </span>
+            <span className="text-[10px] font-mono text-[#526052]">
+              {problem.totalSubmissions.toLocaleString()} subs
+            </span>
+          </div>
+        )}
 
-        <Link
-          href={`/problems/${problem.slug}`}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 transition-colors"
+        {/* Difficulty Badge (compact) */}
+        <DifficultyBadge difficulty={problem.difficulty} size="sm" />
+
+        {/* Subtle navigation affordance */}
+        <span
+          aria-hidden="true"
+          className="text-[#526052]/50 group-hover:text-[#344E41] group-hover:translate-x-1 transition-all duration-150 ease-out text-xs"
         >
-          Solve Problem
-          <span aria-hidden="true">→</span>
-        </Link>
+          →
+        </span>
       </div>
-    </article>
+    </Link>
   );
 }
