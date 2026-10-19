@@ -1,5 +1,6 @@
 import { pgTable, varchar, text, timestamp, pgEnum, jsonb, integer } from 'drizzle-orm/pg-core';
 import type { ProblemExample } from '@code-arena/shared';
+import { users } from './users';
 
 // Difficulty enum: Easy, Medium, Hard
 export const problemDifficultyEnum = pgEnum('problem_difficulty', ['Easy', 'Medium', 'Hard']);
@@ -11,6 +12,9 @@ export const problems = pgTable('problems', {
   id: varchar('id', { length: 64 }).primaryKey(),
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   title: varchar('title', { length: 255 }).notNull(),
+  createdBy: varchar('created_by', { length: 64 }).references(() => users.id, {
+    onDelete: 'set null',
+  }),
   difficulty: problemDifficultyEnum('difficulty').notNull().default('Easy'),
   category: varchar('category', { length: 100 }).notNull().default('Algorithms'),
   tags: jsonb('tags').$type<string[]>().notNull().default([]),
