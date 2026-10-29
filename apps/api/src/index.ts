@@ -3,11 +3,14 @@ import { trpcServer } from '@hono/trpc-server'
 import { initTRPC } from '@trpc/server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { bodyLimit } from 'hono/body-limit'
 import { streamSSE } from 'hono/streaming'
 
 import { problemRouter } from './routers/problem'
 import { executionRouter } from './routers/execution'
 import { testCaseAdminRouter } from './routers/test-case-admin'
+import { leaderboardRouter } from './routers/leaderboard'
+import { progressRouter } from './routers/progress'
 import { createApiContext, type ApiContext } from './context'
 import { getRecentActivity, subscribeToActivity, type ActivityEvent } from './services/activity-feed'
 
@@ -25,6 +28,8 @@ export const appRouter = router({
   problem: problemRouter,
   execution: executionRouter,
   testCaseAdmin: testCaseAdminRouter,
+  leaderboard: leaderboardRouter,
+  progress: progressRouter,
 })
 
 export type AppRouter = typeof appRouter
@@ -110,11 +115,30 @@ app.get('/events', (c) =>
 
 app.use('/trpc/*', corsMiddleware)
 
+// Protect /trpc/* against oversized payload memory exhaustion DoS (max 128KB)
+app.use(
+  '/trpc/*',
+  bodyLimit({
+    maxSize: 128 * 1024,
+    onError: (c) => {
+      return c.json(
+        {
+          error: {
+            message: 'Request payload too large. Maximum permitted size is 128KB.',
+            code: 'PAYLOAD_TOO_LARGE',
+          },
+        },
+        413
+      )
+    },
+  })
+)
+
 app.use(
   '/trpc/*',
   trpcServer({
     router: appRouter,
-    createContext: (_opts, c) => createApiContext(c.req.raw),
+    createContext: (_opts, c) => createApiContext(c.req.raw, c),
   })
 )
 
@@ -125,16 +149,23 @@ app.get('/', (c) => {
   })
 })
 
-const port = Number(process.env.PORT) || 3001
+const isTestEnv =
+  process.env.NODE_ENV === 'test' ||
+  Boolean(process.env.VITEST) ||
+  process.argv.some((arg) => arg.includes('--test'));
 
-serve(
-  {
-    fetch: app.fetch,
-    port,
-  },
-  (info) => {
-    console.log(`CodeArena API is running at http://localhost:${info.port}`)
-  }
-)
+const port = Number(process.env.PORT) || 3001;
+
+if (!isTestEnv) {
+  serve(
+    {
+      fetch: app.fetch,
+      port,
+    },
+    (info) => {
+      console.log(`CodeArena API is running at http://localhost:${info.port}`);
+    }
+  );
+}
 
 export default app

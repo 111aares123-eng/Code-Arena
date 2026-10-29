@@ -114,7 +114,9 @@ export async function evaluateSubmission(params: EvaluateSubmissionParams): Prom
 
   const mode: EvaluationMode = params.judgeCases.length > 0 ? 'FULL' : 'SAMPLES_ONLY';
 
-  const visibleCases: VisibleCase[] = [
+  const seenVisibleInputs = new Set<string>();
+  const visibleCases: VisibleCase[] = [];
+  for (const c of [
     ...(problem.examples ?? []).map((ex) => ({
       input: ex.input,
       structuredInput: ex.structuredInput,
@@ -123,7 +125,12 @@ export async function evaluateSubmission(params: EvaluateSubmissionParams): Prom
     ...params.judgeCases
       .filter((c) => c.isVisible)
       .map((c) => ({ input: c.input, structuredInput: c.structuredInput, expectedOutput: c.expectedOutput })),
-  ];
+  ]) {
+    if (!seenVisibleInputs.has(c.input)) {
+      seenVisibleInputs.add(c.input);
+      visibleCases.push(c);
+    }
+  }
   const hiddenCases: HiddenCase[] = params.judgeCases
     .filter((c) => !c.isVisible)
     .map((c) => ({ input: c.input, structuredInput: c.structuredInput, expectedOutput: c.expectedOutput }));

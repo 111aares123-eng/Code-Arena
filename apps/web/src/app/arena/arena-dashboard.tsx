@@ -12,6 +12,12 @@ import {
   subscribeToDaySnapshot,
   subscribeToPracticeProgress,
 } from '../../lib/arena-progress';
+import {
+  fetchLeaderboard,
+  fetchCurrentProgress,
+  type GlobalLeaderboardEntry,
+  type StudentProgressSummary,
+} from '../../lib/api';
 
 type FeedEvent = {
   id: string;
@@ -71,7 +77,7 @@ function ActivityIcon() {
 }
 
 export function ArenaDashboard() {
-  const progress = useSyncExternalStore(
+  const localProgress = useSyncExternalStore(
     subscribeToPracticeProgress,
     readPracticeProgress,
     () => EMPTY_PRACTICE_PROGRESS
@@ -81,6 +87,51 @@ export function ArenaDashboard() {
   const [isStreamConnected, setIsStreamConnected] = useState(false);
   const [boardPeriod, setBoardPeriod] = useState<BoardPeriod>('Today');
   const [activityFilter, setActivityFilter] = useState<'All' | 'Practice'>('All');
+
+  // Server-side data states
+  const [liveLeaderboard, setLiveLeaderboard] = useState<GlobalLeaderboardEntry[] | null>(null);
+  const [isLeaderboardLive, setIsLeaderboardLive] = useState(false);
+  const [serverProgress, setServerProgress] = useState<StudentProgressSummary | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchLeaderboard()
+      .then((data) => {
+        if (!isMounted) return;
+        if (data) {
+          setLiveLeaderboard(data.entries);
+          setIsLeaderboardLive(true);
+        } else {
+          setIsLeaderboardLive(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setIsLeaderboardLive(false);
+      });
+
+    fetchCurrentProgress()
+      .then((prog) => {
+        if (!isMounted) return;
+        if (prog) setServerProgress(prog);
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const isServerSynced = Boolean(serverProgress);
+  const progress = useMemo(() => {
+    if (serverProgress) {
+      return {
+        xp: serverProgress.xp,
+        solvedProblemSlugs: serverProgress.solvedProblemSlugs,
+        practiceDays: localProgress.practiceDays,
+      };
+    }
+    return localProgress;
+  }, [serverProgress, localProgress]);
 
   useEffect(() => {
     const stream = new EventSource(`${API_BASE_URL}/events`);
@@ -156,8 +207,14 @@ export function ArenaDashboard() {
               <div className="mb-5 flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#252D25]/10 bg-[#DDE5D5] text-sm font-bold text-[#344E41]">CA</div>
                 <div>
-                  <p className="text-sm font-semibold text-[#252D25]">Practice profile</p>
-                  <p className="text-xs text-[#526052]">Saved privately on this device</p>
+                  <p className="text-sm font-semibold text-[#252D25]">
+                    {serverProgress ? serverProgress.displayName || serverProgress.username : 'Practice profile'}
+                  </p>
+                  <p className="text-xs text-[#526052]">
+                    {isServerSynced
+                      ? 'Synced with student account'
+                      : 'Saved privately on this device · Sign in to compete'}
+                  </p>
                 </div>
               </div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#526052]">Competitive rank</p>
@@ -263,24 +320,63 @@ export function ArenaDashboard() {
             <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-[#252D25]">Campus board</h2>
-                <p className="mt-1 text-xs text-[#526052]">Preview standings · practice XP only</p>
+                <p className="mt-1 text-xs text-[#526052]">
+                  {isLeaderboardLive
+                    ? 'Live database rankings · Global student standings'
+                    : 'Preview standings · Live leaderboard offline'}
+                </p>
               </div>
-              <label className="sr-only" htmlFor="board-period">Leaderboard period</label>
-              <select id="board-period" value={boardPeriod} onChange={(event) => setBoardPeriod(event.target.value as BoardPeriod)} className="rounded-lg border border-[#252D25]/15 bg-[#FDFBF7] px-2.5 py-1.5 text-xs text-[#252D25] outline-none focus-visible:ring-2 focus-visible:ring-[#344E41]">
-                {(['Today', 'This week', 'All time'] as const).map((period) => <option key={period}>{period}</option>)}
-              </select>
+              {!isLeaderboardLive && (
+                <>
+                  <label className="sr-only" htmlFor="board-period">Leaderboard period</label>
+                  <select id="board-period" value={boardPeriod} onChange={(event) => setBoardPeriod(event.target.value as BoardPeriod)} className="rounded-lg border border-[#252D25]/15 bg-[#FDFBF7] px-2.5 py-1.5 text-xs text-[#252D25] outline-none focus-visible:ring-2 focus-visible:ring-[#344E41]">
+                    {(['Today', 'This week', 'All time'] as const).map((period) => <option key={period}>{period}</option>)}
+                  </select>
+                </>
+              )}
             </div>
-            <ol className="space-y-2" aria-label={`${boardPeriod} preview standings`}>
-              {currentBoard.map((player, index) => (
-                <li key={player.handle} className="flex items-center gap-3 rounded-xl border border-[#252D25]/5 bg-[#F5F1E8] px-3 py-2.5">
-                  <span className={`w-6 text-center font-mono text-xs ${index === 0 ? 'text-amber-800 font-bold' : 'text-[#526052]'}`}>{String(index + 1).padStart(2, '0')}</span>
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#DDE5D5] text-[10px] font-bold uppercase text-[#344E41]">{player.handle.slice(0, 2)}</span>
-                  <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#252D25]">{player.handle}</span>
-                  <span className="text-right"><span className="block text-xs font-semibold font-mono text-[#252D25]">{player.points.toLocaleString()} XP</span><span className={`text-[10px] font-mono ${player.change.startsWith('+') ? 'text-emerald-800' : player.change.startsWith('−') ? 'text-rose-900' : 'text-[#526052]'}`}>{player.change}</span></span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-4 text-[10px] leading-4 text-[#526052]">Sample handles and standings illustrate the layout. Real campus ranks need contest accounts and persisted results.</p>
+            {isLeaderboardLive ? (
+              liveLeaderboard && liveLeaderboard.length > 0 ? (
+                <ol className="space-y-2" aria-label="Campus leaderboard standings">
+                  {liveLeaderboard.map((player) => (
+                    <li key={player.userId} className="flex items-center gap-3 rounded-xl border border-[#252D25]/5 bg-[#F5F1E8] px-3 py-2.5">
+                      <span className={`w-6 text-center font-mono text-xs ${player.rank === 1 ? 'text-amber-800 font-bold' : 'text-[#526052]'}`}>
+                        {String(player.rank).padStart(2, '0')}
+                      </span>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#DDE5D5] text-[10px] font-bold uppercase text-[#344E41]">
+                        {(player.displayName || player.username).slice(0, 2)}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#252D25]">
+                        {player.displayName || player.username}
+                      </span>
+                      <span className="text-right">
+                        <span className="block text-xs font-semibold font-mono text-[#252D25]">{player.xp.toLocaleString()} XP</span>
+                        <span className="text-[10px] font-mono text-[#526052]">{player.rating} MMR</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div className="rounded-xl border border-dashed border-[#252D25]/15 bg-[#F5F1E8] px-4 py-8 text-center">
+                  <p className="text-sm font-semibold text-[#252D25]">The arena board is waiting for its first contender.</p>
+                  <p className="mt-1 text-xs text-[#526052]">Solve problems to take the #1 spot on the campus leaderboard!</p>
+                </div>
+              )
+            ) : (
+              <>
+                <ol className="space-y-2" aria-label={`${boardPeriod} preview standings`}>
+                  {currentBoard.map((player, index) => (
+                    <li key={player.handle} className="flex items-center gap-3 rounded-xl border border-[#252D25]/5 bg-[#F5F1E8] px-3 py-2.5">
+                      <span className={`w-6 text-center font-mono text-xs ${index === 0 ? 'text-amber-800 font-bold' : 'text-[#526052]'}`}>{String(index + 1).padStart(2, '0')}</span>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#DDE5D5] text-[10px] font-bold uppercase text-[#344E41]">{player.handle.slice(0, 2)}</span>
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#252D25]">{player.handle}</span>
+                      <span className="text-right"><span className="block text-xs font-semibold font-mono text-[#252D25]">{player.points.toLocaleString()} XP</span><span className={`text-[10px] font-mono ${player.change.startsWith('+') ? 'text-emerald-800' : player.change.startsWith('−') ? 'text-rose-900' : 'text-[#526052]'}`}>{player.change}</span></span>
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-4 text-[10px] leading-4 text-[#526052]">Live database rankings are currently offline. Showing local preview standings.</p>
+              </>
+            )}
           </div>
         </section>
 

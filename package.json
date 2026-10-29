@@ -4,14 +4,19 @@
   "private": true,
   "packageManager": "pnpm@12.11.2",
   "scripts": {
+    "dev": "pnpm --parallel --filter web --filter api dev",
     "dev:web": "pnpm --filter web dev",
     "dev:api": "pnpm --filter api dev",
+    "build": "pnpm --filter web build",
+    "typecheck": "pnpm --filter @code-arena/db exec tsc --noEmit && pnpm --filter api typecheck && pnpm --filter web exec tsc --noEmit",
+    "lint": "pnpm --filter web lint",
     "db:generate": "pnpm --filter @code-arena/db generate",
     "db:migrate": "pnpm --filter @code-arena/db migrate",
     "db:push": "pnpm --filter @code-arena/db push",
     "db:studio": "pnpm --filter @code-arena/db studio",
     "db:seed": "pnpm --filter @code-arena/db seed",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test tests/*.test.mjs && pnpm --filter api test",
+    "test:root": "node --test tests/*.test.mjs",
     "test:api": "pnpm --filter api test"
   }
 }

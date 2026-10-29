@@ -35,44 +35,65 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-Configure a running Judge0 service using the root `.env`. The existing `docker/judge0` folder is retained; its deployment was not verified in this update. Code execution requires Judge0; the problem library can use its bundled fallback catalog without it.
+## Services, Dependencies & Port Map
 
-Start separate PowerShell windows at the project root:
+| Service | Port | Environment Variable | Role |
+| :--- | :--- | :--- | :--- |
+| **CodeArena Frontend** | `3000` | `WEB_ORIGIN=http://localhost:3000` | Next.js 16.4.3 App Router web application |
+| **CodeArena API** | `3001` | `PORT=3001`, `NEXT_PUBLIC_API_URL=http://localhost:3001` | Hono/tRPC backend providing problems, submission history, test cases, and auth |
+| **PostgreSQL Database** | `5432` | `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/codearena` | Relational store for problems, test cases, student progress, and submission records |
+| **Judge0 CE Engine** | `2358` | `JUDGE0_BASE_URL=http://localhost:2358` (bound to `127.0.0.1:2358`) | Sandboxed code compiler and test runner for Python and C++ |
+| **Judge0 Internal Redis** | `6379` | Internal Docker container network (`redis:7.2.4`) | Job queue broker for Judge0 worker nodes |
 
+## Workspace Workflow & Scripts
+
+The root workspace is managed via `pnpm` (`packageManager: pnpm@12.11.2`).
+
+### Development
+Start frontend and API services together in parallel:
 ```powershell
-pnpm dev:api
+pnpm dev
+```
+Or run individual services independently:
+```powershell
+pnpm dev:web  # Starts Next.js frontend on http://localhost:3000
+pnpm dev:api  # Starts Hono/tRPC backend on http://localhost:3001
 ```
 
-```powershell
-pnpm dev:web
-```
-
-Open `http://localhost:3000/arena`.
-
-## Verification
-
-Completed in the supplied environment:
-
-- Frozen-lockfile dependency installation.
-- Web and API TypeScript checks.
-- Web ESLint check.
-- Web production build, including all 15 generated pages (using the fallback dataset).
-- Four regression tests covering reward deduplication, repeat-day streaks, malformed legacy saves, permanent achievement unlocking, and cancellation of stalled Judge0 polling.
-
-Run the checks yourself:
-
+### Hermetic Test Suites
+The root test command runs all hermetic test suites across both the root regression suite and API routers:
 ```powershell
 pnpm test
-pnpm --filter web exec tsc --noEmit
-pnpm --filter api typecheck
-pnpm --filter web lint
-pnpm --filter web build
+```
+Individual test suites remain accessible:
+```powershell
+pnpm test:root  # Executes node --test tests/*.test.mjs (12 tests)
+pnpm test:api   # Executes tsx --test apps/api/test/*.test.ts (104 tests)
 ```
 
-API development-server startup could not be smoke-tested here: the execution environment denied tsx's IPC socket (`EPERM`). PostgreSQL, live Judge0 execution, browser interactions, and live SSE/CORS were not integration-tested. Validate these with your local services.
+### Typechecks & Linting
+```powershell
+pnpm typecheck  # Typechecks @code-arena/db, apps/api, and apps/web
+pnpm lint       # Lints apps/web using ESLint 9
+pnpm build      # Builds Next.js production bundle with Turbopack
+```
 
-## Current boundaries
+## Monaco Editor Architecture & Reliability
 
-Progress is browser-local, editable by the user, and is not a secure competitive score. Sample passes do not establish correctness against hidden tests. Campus standings remain clearly labeled demonstration data. No accounts, persistent multiplayer leaderboard, or rated duels were added. The warm-up recommendation uses the bundled catalog, not a server-wide personalized ranking.
+- **Loading Mechanism**: `@monaco-editor/react` uses `@monaco-editor/loader` to load AMD scripts and web workers dynamically from jsDelivr at runtime.
+- **Version Pinning**: Monaco assets are pinned to version `0.55.1` (`https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs`).
+- **Configurable CDN / Mirror**: Organizations or intranet environments can override the asset host via `NEXT_PUBLIC_MONACO_CDN_URL`.
+- **Offline / Disconnect Fallback**: Because CodeArena's code evaluation, submission records, and catalog data depend on backend services (Judge0 and PostgreSQL), full offline execution is not architecturally justified. However, to guarantee editor reliability during CDN network latency or firewall blocks, `MonacoCodeEditor` automatically catches CDN load failures and renders a styled, responsive `<textarea>` fallback editor. Users can write code, retain edits, and submit without the UI hanging.
+- **Maintainability**: No raw, unversioned 30MB+ Monaco bundles are checked into `apps/web/public/`, avoiding git bloat and worker MIME type issues.
 
-The ZIP excludes installed dependencies, generated builds, and secret .env files. Existing source and lockfiles are included.
+## Module Configuration
+
+All packages across the workspace (`apps/web`, `apps/api`, `packages/db`, `packages/shared`) explicitly declare `"type": "module"`. This resolves the Node.js v22+ `MODULE_TYPELESS_PACKAGE_JSON` experimental warning when importing TypeScript source modules directly (e.g., `tests/game-rules.test.mjs` importing `apps/web/src/lib/game-rules.ts`).
+
+## Verification Summary
+
+- **Tests**: 116 tests executed across root and API (108 passed, 8 skipped for live-daemon integration, 0 failed).
+- **TypeScript**: `pnpm typecheck` passed with 0 errors across `@code-arena/db`, `api`, and `web`.
+- **Lint**: `pnpm lint` passed with 0 errors and 0 warnings.
+- **Production Build**: `pnpm build` passed with 0 errors, prerendering all 15 routes cleanly.
+

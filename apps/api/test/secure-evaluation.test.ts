@@ -396,47 +396,88 @@ class Solution:
         return [0, 0] # fail hidden case
 `;
 
-    const caller = executionRouter.createCaller({ testCaseStore: mockStore });
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url: string | URL | Request, init?: RequestInit) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+      if (urlStr.includes('/submissions')) {
+        const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
+        const sourceCode = body.source_code ? Buffer.from(body.source_code, 'base64').toString('utf8') : '';
+        const isCheatCode = sourceCode.includes('# fail hidden case');
+        const isHiddenCase = sourceCode.includes('10') && (sourceCode.includes('1,5,9') || sourceCode.includes('1, 5, 9'));
 
-    // 1. Submit correct code: evaluates sample cases + 1 hidden case
-    const passRes = await caller.submit({
-      problemSlug: 'two-sum',
-      sourceCode: correctCode,
-      language: 'python',
-    });
+        let stdout = '[0,1]';
+        if (isHiddenCase) {
+          stdout = isCheatCode ? '[0,0]' : '[0,2]';
+        } else if (sourceCode.includes('3,2,4') || sourceCode.includes('3, 2, 4')) {
+          stdout = '[1,2]';
+        } else if (sourceCode.includes('3,3') || sourceCode.includes('3, 3')) {
+          stdout = '[0,1]';
+        }
 
-    assert.equal(passRes.success, true);
-    assert.equal(passRes.verdict, 'ACCEPTED');
-    assert.equal(passRes.totalCases, 4); // 3 sample cases + 1 hidden case
-    assert.equal(passRes.passedCases, 4);
-    assert.ok(passRes.hiddenCases);
-    assert.equal(passRes.hiddenCases.total, 1);
-    assert.equal(passRes.hiddenCases.passed, 1);
+        const responseData = {
+          stdout: Buffer.from(stdout).toString('base64'),
+          stderr: null,
+          compile_output: null,
+          message: null,
+          exit_code: 0,
+          exit_signal: null,
+          status: { id: 3, description: 'Accepted' },
+          time: '0.015',
+          memory: 12000,
+        };
+        return new Response(JSON.stringify(responseData), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return originalFetch(url, init);
+    };
 
-    // 2. Submit cheat code that passes samples but fails hidden case
-    const failRes = await caller.submit({
-      problemSlug: 'two-sum',
-      sourceCode: incorrectCode,
-      language: 'python',
-    });
+    try {
+      const caller = executionRouter.createCaller({ testCaseStore: mockStore });
 
-    assert.equal(failRes.success, false);
-    assert.equal(failRes.verdict, 'WRONG_ANSWER');
-    assert.equal(failRes.passedCases, 3); // 3 samples passed, hidden failed
-    assert.ok(failRes.hiddenCases);
-    assert.equal(failRes.hiddenCases.passed, 0);
-    assert.equal(failRes.hiddenCases.results[0].outcome, 'WRONG_ANSWER');
+      // 1. Submit correct code: evaluates sample cases + 1 hidden case
+      const passRes = await caller.submit({
+        problemSlug: 'two-sum',
+        sourceCode: correctCode,
+        language: 'python',
+      });
 
-    // 3. Confirm execution.run cannot be called with hidden test case
-    // execution.run only takes sample index (e.g. 0) or custom input, never hidden case IDs
-    const runRes = await caller.run({
-      problemSlug: 'two-sum',
-      sourceCode: correctCode,
-      language: 'python',
-      testCaseIndex: 0,
-    });
-    assert.equal(runRes.success, true);
-    assert.ok(runRes.testCaseEvaluation);
-    assert.equal(runRes.testCaseEvaluation.isMatched, true);
+      assert.equal(passRes.success, true);
+      assert.equal(passRes.verdict, 'ACCEPTED');
+      assert.equal(passRes.totalCases, 4); // 3 sample cases + 1 hidden case
+      assert.equal(passRes.passedCases, 4);
+      assert.ok(passRes.hiddenCases);
+      assert.equal(passRes.hiddenCases.total, 1);
+      assert.equal(passRes.hiddenCases.passed, 1);
+
+      // 2. Submit cheat code that passes samples but fails hidden case
+      const failRes = await caller.submit({
+        problemSlug: 'two-sum',
+        sourceCode: incorrectCode,
+        language: 'python',
+      });
+
+      assert.equal(failRes.success, false);
+      assert.equal(failRes.verdict, 'WRONG_ANSWER');
+      assert.equal(failRes.passedCases, 3); // 3 samples passed, hidden failed
+      assert.ok(failRes.hiddenCases);
+      assert.equal(failRes.hiddenCases.passed, 0);
+      assert.equal(failRes.hiddenCases.results[0].outcome, 'WRONG_ANSWER');
+
+      // 3. Confirm execution.run cannot be called with hidden test case
+      // execution.run only takes sample index (e.g. 0) or custom input, never hidden case IDs
+      const runRes = await caller.run({
+        problemSlug: 'two-sum',
+        sourceCode: correctCode,
+        language: 'python',
+        testCaseIndex: 0,
+      });
+      assert.equal(runRes.success, true);
+      assert.ok(runRes.testCaseEvaluation);
+      assert.equal(runRes.testCaseEvaluation.isMatched, true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });

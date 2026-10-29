@@ -1,11 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import Editor, { type OnMount } from '@monaco-editor/react';
+import React, { useState, useEffect } from 'react';
+import Editor, { loader, type OnMount } from '@monaco-editor/react';
 import {
   type SupportedLanguage,
   SUPPORTED_LANGUAGES,
 } from './types';
+
+const MONACO_VERSION = '0.55.1';
+const DEFAULT_CDN_URL = `https://cdn.jsdelivr.net/npm/monaco-editor@${MONACO_VERSION}/min/vs`;
+
+if (typeof window !== 'undefined') {
+  loader.config({
+    paths: {
+      vs: process.env.NEXT_PUBLIC_MONACO_CDN_URL || DEFAULT_CDN_URL,
+    },
+  });
+}
 
 interface MonacoCodeEditorProps {
   selectedLanguage: SupportedLanguage;
@@ -31,6 +42,29 @@ export function MonacoCodeEditor({
   isSubmitting = false,
 }: MonacoCodeEditorProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isEditorReady, setIsEditorReady] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    loader
+      .init()
+      .then(() => {
+        if (isMounted) {
+          setIsEditorReady(true);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          console.warn('Monaco Editor CDN failed to load, falling back to text editor:', err);
+          setLoadFailed(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const activeLanguageConfig =
     SUPPORTED_LANGUAGES.find((lang) => lang.id === selectedLanguage) ||
@@ -39,6 +73,7 @@ export function MonacoCodeEditor({
   const currentCode = codeByLanguage[selectedLanguage] ?? '';
 
   const handleEditorDidMount: OnMount = (editor) => {
+    setIsEditorReady(true);
     // Configure editor preferences
     editor.updateOptions({
       tabSize: selectedLanguage === 'python' ? 4 : 2,
@@ -191,44 +226,95 @@ export function MonacoCodeEditor({
 
       {/* Editor Body */}
       <div className="flex-1 min-h-[350px] relative">
-        <Editor
-          height="100%"
-          language={activeLanguageConfig.monacoLanguage}
-          value={currentCode}
-          theme="vs-dark"
-          onChange={(val) => onCodeChange(selectedLanguage, val ?? '')}
-          onMount={handleEditorDidMount}
-          loading={
-            <div className="flex flex-col items-center justify-center h-full bg-[#0c121d] text-slate-400 space-y-2">
-              <div className="w-6 h-6 border-2 border-[#344E41] border-t-transparent rounded-full animate-spin" />
-              <div className="text-xs font-mono">Initializing Monaco Editor...</div>
+        {loadFailed ? (
+          <div className="flex flex-col h-full bg-[#182018] text-[#F5F1E8]">
+            <div className="flex items-center justify-between px-3.5 py-2 bg-amber-950/40 border-b border-amber-500/20 text-xs text-amber-200">
+              <span className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Monaco CDN unreachable. Using responsive fallback editor.</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoadFailed(false);
+                  loader
+                    .init()
+                    .then(() => setIsEditorReady(true))
+                    .catch(() => setLoadFailed(true));
+                }}
+                className="underline hover:text-white cursor-pointer text-[11px]"
+              >
+                Retry CDN
+              </button>
             </div>
-          }
-          options={{
-            fontSize: 13,
-            fontFamily: 'Consolas, "Fira Code", "Courier New", monospace',
-            lineNumbers: 'on',
-            lineHeight: 20,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            tabSize: selectedLanguage === 'python' ? 4 : 2,
-            insertSpaces: true,
-            cursorBlinking: 'smooth',
-            smoothScrolling: true,
-            renderWhitespace: 'selection',
-            bracketPairColorization: { enabled: true },
-            padding: { top: 12, bottom: 12 },
-          }}
-        />
+            <textarea
+              id="code-editor-fallback"
+              aria-label={`Code editor for ${activeLanguageConfig.name}`}
+              value={currentCode}
+              onChange={(e) => onCodeChange(selectedLanguage, e.target.value)}
+              className="flex-1 w-full p-4 font-mono text-xs leading-relaxed bg-[#182018] text-[#E8E2D6] resize-none focus:outline-none focus:ring-1 focus:ring-[#879B7A] selection:bg-[#344E41]"
+              spellCheck={false}
+              autoCapitalize="off"
+              autoComplete="off"
+              autoCorrect="off"
+            />
+          </div>
+        ) : (
+          <Editor
+            height="100%"
+            language={activeLanguageConfig.monacoLanguage}
+            value={currentCode}
+            theme="vs-dark"
+            onChange={(val) => onCodeChange(selectedLanguage, val ?? '')}
+            onMount={handleEditorDidMount}
+            loading={
+              <div className="flex flex-col items-center justify-center h-full bg-[#182018] text-slate-400 space-y-2">
+                <div className="w-6 h-6 border-2 border-[#879B7A] border-t-transparent rounded-full animate-spin" />
+                <div className="text-xs font-mono text-[#DDD7CA]">Initializing Monaco Editor...</div>
+              </div>
+            }
+            options={{
+              fontSize: 13,
+              fontFamily: 'Consolas, "Fira Code", "Courier New", monospace',
+              lineNumbers: 'on',
+              lineHeight: 20,
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+              tabSize: selectedLanguage === 'python' ? 4 : 2,
+              insertSpaces: true,
+              cursorBlinking: 'smooth',
+              smoothScrolling: true,
+              renderWhitespace: 'selection',
+              bracketPairColorization: { enabled: true },
+              padding: { top: 12, bottom: 12 },
+            }}
+          />
+        )}
       </div>
 
       {/* Bottom Status Bar */}
       <div className="flex items-center justify-between px-3.5 py-1.5 bg-[#E8E2D6] border-t border-[#252D25]/10 text-[11px] font-mono text-[#526052] select-none">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-emerald-800 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-700" />
-            <span>Monaco Editor Active</span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                loadFailed
+                  ? 'bg-amber-600'
+                  : isEditorReady
+                  ? 'bg-emerald-700'
+                  : 'bg-slate-400 animate-pulse'
+              }`}
+            />
+            <span>
+              {loadFailed
+                ? 'Fallback Editor Active'
+                : isEditorReady
+                ? 'Monaco Editor Ready'
+                : 'Loading Editor...'}
+            </span>
           </span>
           <span className="text-[#879B7A]">•</span>
           <span>UTF-8</span>

@@ -118,4 +118,8 @@ export interface SubmitCodeResponse {
   error?: string;
   disclaimer: string;
   submittedAt: string;
+  /** Persisted submission ID if persisted, or null if unpersisted. */
+  submissionId?: string | null;
+  /** Whether the submission was successfully persisted to the database. */
+  persisted?: boolean;
 }

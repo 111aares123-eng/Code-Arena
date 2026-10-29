@@ -1,40 +1,157 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition, useCallback, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { Problem, ProblemDifficulty } from '../types/problem';
 import { ProblemCard } from './problem-card';
 import { ProblemFilters } from './problem-filters';
 import { EmptyState } from './empty-state';
 
-interface ProblemListViewProps {
+export interface ProblemListViewProps {
   initialProblems: Problem[];
   availableTags: string[];
   stats: Record<ProblemDifficulty | 'Total', number>;
+  initialQuery?: string;
+  initialDifficulty?: 'ALL' | ProblemDifficulty;
+  initialTag?: string;
+  totalResults?: number;
+  currentPage?: number;
+  totalPages?: number;
 }
 
 export function ProblemListView({
   initialProblems,
   availableTags,
   stats,
+  initialQuery = '',
+  initialDifficulty = 'ALL',
+  initialTag = '',
+  totalResults: serverTotal,
+  currentPage = 1,
+  totalPages = 1,
 }: ProblemListViewProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<'ALL' | ProblemDifficulty>('ALL');
-  const [selectedTag, setSelectedTag] = useState('');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [, startTransition] = useTransition();
 
-  // Filter problems based on search, difficulty, and tag
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'ALL' | ProblemDifficulty>(initialDifficulty);
+  const [selectedTag, setSelectedTag] = useState(initialTag);
+
+  // Track prop changes during render to avoid cascading effect renders
+  const [prevInitialQuery, setPrevInitialQuery] = useState(initialQuery);
+  const [prevInitialDiff, setPrevInitialDiff] = useState(initialDifficulty);
+  const [prevInitialTag, setPrevInitialTag] = useState(initialTag);
+
+  if (initialQuery !== prevInitialQuery) {
+    setPrevInitialQuery(initialQuery);
+    setSearchQuery(initialQuery);
+  }
+  if (initialDifficulty !== prevInitialDiff) {
+    setPrevInitialDiff(initialDifficulty);
+    setSelectedDifficulty(initialDifficulty);
+  }
+  if (initialTag !== prevInitialTag) {
+    setPrevInitialTag(initialTag);
+    setSelectedTag(initialTag);
+  }
+
+  // Synchronize state changes to URL query parameters
+  const updateUrl = useCallback(
+    (newQuery: string, newDiff: 'ALL' | ProblemDifficulty, newTag: string, newPage: number = 1) => {
+      const params = new URLSearchParams(searchParams ? searchParams.toString() : '');
+
+      if (newQuery.trim()) {
+        params.set('q', newQuery.trim());
+      } else {
+        params.delete('q');
+      }
+
+      if (newDiff && newDiff !== 'ALL') {
+        params.set('difficulty', newDiff);
+      } else {
+        params.delete('difficulty');
+      }
+
+      if (newTag) {
+        params.set('tag', newTag);
+      } else {
+        params.delete('tag');
+      }
+
+      if (newPage > 1) {
+        params.set('page', String(newPage));
+      } else {
+        params.delete('page');
+      }
+
+      const queryString = params.toString();
+      const targetUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+      startTransition(() => {
+        router.replace(targetUrl, { scroll: false });
+      });
+    },
+    [pathname, router, searchParams]
+  );
+
+  // Debounced search query updates (300ms) for responsive typing
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      updateUrl(val, selectedDifficulty, selectedTag, 1);
+    }, 300);
+  };
+
+  const handleDifficultyChange = (diff: 'ALL' | ProblemDifficulty) => {
+    setSelectedDifficulty(diff);
+    updateUrl(searchQuery, diff, selectedTag, 1);
+  };
+
+  const handleTagChange = (tag: string) => {
+    setSelectedTag(tag);
+    updateUrl(searchQuery, selectedDifficulty, tag, 1);
+  };
+
+  const handleReset = () => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    setSearchQuery('');
+    setSelectedDifficulty('ALL');
+    setSelectedTag('');
+    startTransition(() => {
+      router.replace(pathname, { scroll: false });
+    });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    updateUrl(searchQuery, selectedDifficulty, selectedTag, newPage);
+  };
+
+  // Instant local filtering while server request / URL navigation is in flight
   const filteredProblems = useMemo(() => {
+    // If client filter matches what the server supplied, use server-filtered items directly
+    const isMatchingServer =
+      searchQuery.trim() === initialQuery.trim() &&
+      selectedDifficulty === initialDifficulty &&
+      selectedTag === initialTag;
+
+    if (isMatchingServer) {
+      return initialProblems;
+    }
+
     return initialProblems.filter((problem) => {
-      // Difficulty match
       if (selectedDifficulty !== 'ALL' && problem.difficulty !== selectedDifficulty) {
         return false;
       }
 
-      // Tag match
       if (selectedTag && !problem.tags.includes(selectedTag)) {
         return false;
       }
 
-      // Search match (title, shortDescription, or tags)
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         const matchesTitle = problem.title.toLowerCase().includes(query);
@@ -45,13 +162,12 @@ export function ProblemListView({
 
       return true;
     });
-  }, [initialProblems, selectedDifficulty, selectedTag, searchQuery]);
+  }, [initialProblems, selectedDifficulty, selectedTag, searchQuery, initialQuery, initialDifficulty, initialTag]);
 
-  const handleReset = () => {
-    setSearchQuery('');
-    setSelectedDifficulty('ALL');
-    setSelectedTag('');
-  };
+  const displayTotal =
+    searchQuery === initialQuery && selectedDifficulty === initialDifficulty && selectedTag === initialTag
+      ? serverTotal ?? filteredProblems.length
+      : filteredProblems.length;
 
   return (
     <div className="flex flex-col gap-6 sm:gap-7">
@@ -81,14 +197,14 @@ export function ProblemListView({
       {/* Filter and Search Bar */}
       <ProblemFilters
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
         selectedDifficulty={selectedDifficulty}
-        onDifficultyChange={setSelectedDifficulty}
+        onDifficultyChange={handleDifficultyChange}
         selectedTag={selectedTag}
-        onTagChange={setSelectedTag}
+        onTagChange={handleTagChange}
         availableTags={availableTags}
-        totalResults={filteredProblems.length}
-        totalProblems={initialProblems.length}
+        totalResults={displayTotal}
+        totalProblems={stats.Total || initialProblems.length}
         onReset={handleReset}
       />
 
@@ -120,6 +236,34 @@ export function ProblemListView({
           description={`No problems found matching "${searchQuery || selectedDifficulty || selectedTag}".`}
           onReset={handleReset}
         />
+      )}
+
+      {/* Server Pagination Bar */}
+      {totalPages > 1 && (
+        <nav
+          aria-label="Problem List Pagination"
+          className="flex items-center justify-between px-4 py-3 bg-[#E8E2D6] rounded-xl border border-[#252D25]/10 text-xs font-medium text-[#526052]"
+        >
+          <button
+            type="button"
+            disabled={currentPage <= 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            className="px-3 py-1.5 rounded-lg border border-[#252D25]/15 bg-[#FDFBF7] text-[#252D25] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#E2DBD0] transition-colors cursor-pointer"
+          >
+            ← Previous
+          </button>
+          <span className="font-mono">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={currentPage >= totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            className="px-3 py-1.5 rounded-lg border border-[#252D25]/15 bg-[#FDFBF7] text-[#252D25] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#E2DBD0] transition-colors cursor-pointer"
+          >
+            Next →
+          </button>
+        </nav>
       )}
     </div>
   );

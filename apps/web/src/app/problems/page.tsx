@@ -1,13 +1,41 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { ProblemDifficulty } from '@code-arena/shared';
 import { getAllProblemTags } from '../../data/mock-problems';
 import { ProblemListView } from '../../components/problem-list-view';
 import { fetchProblems, fetchProblemStats } from '../../lib/api';
 
-export const metadata: Metadata = {
-  title: 'Problem Library | CodeArena 2.0',
-  description: 'Browse, filter, and practice algorithmic problems in Python and C++ on CodeArena 2.0.',
-};
+interface ProblemsPageSearchParams {
+  q?: string;
+  difficulty?: string;
+  tag?: string;
+  page?: string;
+  limit?: string;
+}
+
+interface ProblemsPageProps {
+  searchParams: Promise<ProblemsPageSearchParams>;
+}
+
+export async function generateMetadata({ searchParams }: ProblemsPageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const filterDesc = [
+    params.q ? `"${params.q}"` : '',
+    params.difficulty && params.difficulty !== 'ALL' ? params.difficulty : '',
+    params.tag ? params.tag : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  const title = filterDesc
+    ? `${filterDesc} Problems | Problem Library | CodeArena 2.0`
+    : 'Problem Library | CodeArena 2.0';
+
+  return {
+    title,
+    description: 'Browse, filter, and practice algorithmic problems in Python and C++ on CodeArena 2.0.',
+  };
+}
 
 function ProblemListSkeleton() {
   return (
@@ -30,9 +58,30 @@ function ProblemListSkeleton() {
   );
 }
 
-async function ProblemListSection() {
+async function ProblemListSection({
+  searchParams,
+}: {
+  searchParams: Promise<ProblemsPageSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = params.q?.trim() || '';
+  const rawDifficulty = params.difficulty;
+  const difficulty: 'ALL' | ProblemDifficulty =
+    rawDifficulty === 'Easy' || rawDifficulty === 'Medium' || rawDifficulty === 'Hard'
+      ? rawDifficulty
+      : 'ALL';
+  const tag = params.tag?.trim() || '';
+  const page = Math.max(1, Number(params.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(params.limit) || 50));
+
   const [problemData, stats] = await Promise.all([
-    fetchProblems({ limit: 100 }),
+    fetchProblems({
+      search: q || undefined,
+      difficulty: difficulty !== 'ALL' ? difficulty : undefined,
+      tag: tag || undefined,
+      page,
+      limit,
+    }),
     fetchProblemStats(),
   ]);
 
@@ -59,12 +108,18 @@ async function ProblemListSection() {
         initialProblems={problemData.items}
         availableTags={tags}
         stats={stats}
+        initialQuery={q}
+        initialDifficulty={difficulty}
+        initialTag={tag}
+        totalResults={problemData.total}
+        currentPage={problemData.page}
+        totalPages={problemData.totalPages}
       />
     </div>
   );
 }
 
-export default function ProblemsPage() {
+export default function ProblemsPage({ searchParams }: ProblemsPageProps) {
   return (
     <div className="flex-1 py-10 px-4 sm:px-6 lg:px-8 animate-fade-in">
       <main className="mx-auto max-w-7xl">
@@ -84,7 +139,7 @@ export default function ProblemsPage() {
 
         {/* Streaming Suspense Wrapper */}
         <Suspense fallback={<ProblemListSkeleton />}>
-          <ProblemListSection />
+          <ProblemListSection searchParams={searchParams} />
         </Suspense>
       </main>
     </div>

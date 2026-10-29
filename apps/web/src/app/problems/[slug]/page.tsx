@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getMockProblems } from '../../../data/mock-problems';
-import { fetchProblemBySlug } from '../../../lib/api';
+import { getCachedProblemBySlug } from '../../../lib/api';
 import { ProblemWorkspace } from './problem-workspace';
 
 interface PageProps {
@@ -17,7 +17,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const { problem } = await fetchProblemBySlug(slug);
+  const { problem } = await getCachedProblemBySlug(slug);
 
   if (!problem) {
     return {
@@ -65,7 +65,7 @@ function ProblemWorkspaceSkeleton() {
 }
 
 async function ProblemDetailSection({ slug }: { slug: string }) {
-  const { problem, source } = await fetchProblemBySlug(slug);
+  const { problem, source } = await getCachedProblemBySlug(slug);
 
   if (!problem) {
     notFound();

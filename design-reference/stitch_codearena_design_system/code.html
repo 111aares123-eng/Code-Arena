@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>CodeArena // Coin-Op Arcade</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&amp;family=Space+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}@keyframes arcadeBlink{0%,49%{opacity:1;}50%,100%{opacity:0;}}.arcade-blink{animation:arcadeBlink 1s infinite steps(1);}.crt-lines{background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,0.45) 50%);background-size:100% 4px;pointer-events:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-dim":"#13131b","on-primary-fixed-variant":"#574500","surface":"#13131b","on-secondary-fixed":"#3f001b","secondary-fixed":"#ffd9e1","tertiary-fixed":"#7df4ff","on-secondary-fixed-variant":"#8f0045","background":"#13131b","on-background":"#e4e1ed","on-primary-container":"#6c5700","on-primary-fixed":"#231b00","surface-tint":"#eec200","primary-container":"#facc15","on-tertiary-container":"#00636a","secondary":"#ffb1c5","secondary-fixed-dim":"#ffb1c5","surface-container":"#1f1f27","on-tertiary":"#00363a","primary-fixed-dim":"#eec200","primary":"#ffecb9","primary-fixed":"#ffe083","surface-container-high":"#292932","inverse-primary":"#735c00","outline":"#9a9078","on-primary":"#3c2f00","tertiary-fixed-dim":"#00dbe9","inverse-surface":"#e4e1ed","surface-variant":"#34343d","surface-container-lowest":"#0d0d16","on-surface":"#e4e1ed","inverse-on-surface":"#302f39","tertiary-container":"#00e7f5","on-tertiary-fixed":"#002022","on-surface-variant":"#d1c6ab","surface-bright":"#393842","surface-container-highest":"#34343d","outline-variant":"#4d4632","error":"#ffb4ab","secondary-container":"#e30071","on-secondary":"#65002f","surface-container-low":"#1b1b23","on-error":"#690005","on-secondary-container":"#fffbff","tertiary":"#b8f9ff","on-error-container":"#ffdad6","on-tertiary-fixed-variant":"#004f54","error-container":"#93000a"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-sm":"0.5rem","space-md":"1rem","margin-desktop":"2.5rem","space-lg":"1.5rem","space-xl":"2.5rem","margin":"1rem","gutter-desktop":"1.5rem","space-xs":"0.25rem","gutter":"1rem"},"fontFamily":{"display-lg":["Space Grotesk"],"label-lg":["Space Mono"],"headline-lg-mobile":["Space Grotesk"],"body-lg":["Space Mono"],"label-md":["Space Mono"],"display-lg-mobile":["Space Grotesk"],"title-md":["Space Mono"],"headline-md":["Space Grotesk"],"body-md":["Space Mono"],"label-sm":["Space Mono"],"headline-lg":["Space Grotesk"]},"fontSize":{"display-lg":["48px",{"lineHeight":"52px","letterSpacing":"0.08em","fontWeight":"700"}],"label-lg":["14px",{"lineHeight":"18px","letterSpacing":"0.1em","fontWeight":"700"}],"headline-lg-mobile":["24px",{"lineHeight":"28px","letterSpacing":"0.04em","fontWeight":"700"}],"body-lg":["15px",{"lineHeight":"24px","letterSpacing":"0.02em","fontWeight":"400"}],"label-md":["11px",{"lineHeight":"14px","letterSpacing":"0.12em","fontWeight":"700"}],"display-lg-mobile":["32px",{"lineHeight":"36px","letterSpacing":"0.06em","fontWeight":"700"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"0.06em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"0.04em","fontWeight":"700"}],"body-md":["13px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"400"}],"label-sm":["9px",{"lineHeight":"12px","letterSpacing":"0.14em","fontWeight":"700"}],"headline-lg":["32px",{"lineHeight":"40px","letterSpacing":"0.05em","fontWeight":"700"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container relative min-h-screen"><div class="fixed inset-0 crt-lines z-50"></div><header class="fixed top-0 w-full z-40 bg-surface-container-lowest/95 backdrop-blur-none border-b-2 border-outline-variant shadow-[0_4px_0_#0d0d16]"><div class="w-full max-w-[1200px] mx-auto px-gutter-desktop"><div class="h-12 border-b border-outline-variant/50 flex items-center justify-between text-on-surface-variant font-label-md"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs"><span class="text-secondary font-bold">1UP</span><span class="text-primary font-bold tracking-widest">002700</span></div><div class="hidden sm:flex items-center gap-space-xs"><span class="text-tertiary font-bold">HI-SCORE</span><span class="text-on-surface font-bold tracking-widest">086000</span></div><div class="flex items-center gap-space-xs bg-surface-container-high px-space-sm py-0.5 border border-outline-variant"><span class="text-primary-container font-bold">CREDIT 02</span><span class="text-secondary arcade-blink font-bold ml-1">// INSERT COIN</span></div></div><div class="flex items-center gap-space-lg"><div class="hidden md:flex items-center gap-space-sm"><span class="text-tertiary-container font-bold">DIAMOND II</span><span class="text-on-surface-variant">•</span><span class="text-primary font-bold">2,148 LP</span><div class="flex items-center text-secondary ml-1"><span class="material-symbols-outlined text-[14px]">favorite</span><span class="material-symbols-outlined text-[14px]">favorite</span><span class="material-symbols-outlined text-[14px]">favorite</span></div></div><div class="flex items-center gap-space-sm"><div class="px-space-xs py-0.5 bg-surface-container border border-outline-variant text-label-sm font-label-sm text-tertiary uppercase cursor-pointer hover:bg-surface-container-high">[BGM: ON]</div><div class="w-8 h-8 rounded-none border-2 border-primary-container bg-surface-container-high flex items-center justify-center shadow-[2px_2px_0_#000000]"><div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></div><div class="h-16 flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm"><div class="w-8 h-8 bg-secondary-container flex items-center justify-center shadow-[2px_2px_0_#000000] border border-secondary"><span class="material-symbols-outlined text-on-secondary-container text-[20px]">sports_esports</span></div><div><div class="flex items-center gap-space-xs"><span class="font-display-lg text-headline-md tracking-wider text-primary font-bold">CODE<span class="text-secondary-container">//</span>ARENA</span><span class="text-label-sm font-label-sm px-1 bg-primary-container text-on-primary-container font-bold">[ARCADE-01]</span></div><div class="text-label-sm font-label-sm text-on-surface-variant tracking-widest">コードアリーナ • SYSTEM READY</div></div></div></div><nav class="hidden lg:flex items-center gap-space-xs font-label-md" data-active-classes="bg-primary-container text-on-primary-container font-bold shadow-[2px_2px_0_#000000]"><a aria-current="page" class="px-space-sm py-1.5 transition-none bg-primary-container text-on-primary-container font-bold shadow-[2px_2px_0_#000000]" data-path="arena" href="#">[ARENA]</a><a class="px-space-sm py-1.5 text-on-surface-variant hover:text-on-surface transition-none" data-path="stages" href="#">[STAGES / PROBLEMS]</a><a class="px-space-sm py-1.5 text-on-surface-variant hover:text-on-surface transition-none" data-path="tournaments" href="#">[TOURNAMENTS / CONTESTS]</a><a class="px-space-sm py-1.5 text-on-surface-variant hover:text-on-surface transition-none" data-path="hall-of-fame" href="#">[HALL OF FAME / RANKINGS]</a><a class="px-space-sm py-1.5 text-on-surface-variant hover:text-on-surface transition-none" data-path="player-card" href="#">[PLAYER CARD]</a></nav></div></div></header><main class="w-full pt-28 bg-background relative z-10 min-h-[calc(100vh-80px)]"><div class="max-w-[1200px] mx-auto px-gutter-desktop py-space-lg"><link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;family=Silkscreen:wght@400;700&amp;family=VT323&amp;display=swap" rel="stylesheet"/>
+<div class="flex flex-col w-full gap-space-lg select-none pb-12 font-['VT323'] text-[20px] leading-relaxed">
+<!-- TOP RUNNING MARQUEE TICKER (LED ARCADE SIGN) -->
+<div class="w-full bg-surface-container-lowest border-4 border-outline-variant p-2 shadow-[4px_4px_0_#000000] relative overflow-hidden">
+<div class="flex items-center justify-between text-label-sm font-['Press_Start_2P'] text-[10px] text-primary-container tracking-wider">
+<div class="flex items-center gap-space-sm">
+<span class="inline-block w-3 h-3 bg-secondary-container animate-pulse"></span>
+<span class="text-secondary-fixed">LIVE COIN-OP CAB #042</span>
+<span class="text-on-surface-variant">// SYSTEM READY</span>
+</div>
+<div class="hidden md:flex items-center gap-space-md">
+<span class="text-tertiary">★ BONUS EVENT: 2X EXP ON RECURSION BOSSES</span>
+<span class="text-primary-container arcade-blink">▶ PRESS F5 FOR CO-OP</span>
+</div>
+<div class="text-secondary tracking-widest font-bold">
+        TOKYO_CAB//MIT_GUILD
+      </div>
+</div>
+</div>
+<!-- PLAYER STATUS HUD: 8-BIT CABINET STATS DECK -->
+<div class="w-full bg-surface-container-lowest border-4 border-outline-variant p-space-md shadow-[6px_6px_0_#000000] relative">
+<!-- Retro Corner Notches -->
+<div class="absolute -top-1 -left-1 w-2 h-2 bg-primary-container"></div>
+<div class="absolute -top-1 -right-1 w-2 h-2 bg-primary-container"></div>
+<div class="absolute -bottom-1 -left-1 w-2 h-2 bg-primary-container"></div>
+<div class="absolute -bottom-1 -right-1 w-2 h-2 bg-primary-container"></div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-center">
+<!-- Player Profile & Lives -->
+<div class="lg:col-span-4 flex items-center gap-space-md border-b-2 lg:border-b-0 lg:border-r-2 border-outline-variant/60 pb-3 lg:pb-0 lg:pr-space-md">
+<div class="w-16 h-16 bg-surface-container-high border-2 border-primary-container shadow-[3px_3px_0_#000000] flex flex-col items-center justify-center p-1 relative">
+<!-- Pixel Sprite Avatar -->
+<svg class="w-10 h-10 text-primary-container" fill="currentColor" shape-rendering="crispEdges" viewbox="0 0 16 16">
+<path d="M5 2h6v1H5zM4 3h8v1H4zM4 4h8v1H4zM3 5h10v1H3zM3 6h3v1H3zM10 6h3v1h-3zM3 7h10v1H3zM4 8h8v1H4zM5 9h6v1H5zM4 10h2v3H4zM10 10h2v3h-2z"></path>
+</svg>
+<span class="text-[9px] font-['Press_Start_2P'] text-secondary-container mt-0.5">LVL 42</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-['Press_Start_2P'] text-[13px] text-primary tracking-wide">ALEX_CHEN</span>
+<span class="px-1.5 py-0.5 bg-primary-container text-on-primary-container font-['Silkscreen'] text-[10px] font-bold">P1</span>
+</div>
+<div class="font-['VT323'] text-[18px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
+<span>LIVES:</span>
+<span class="text-secondary-container tracking-widest text-[16px] drop-shadow-[0_0_4px_#e30071]">♥♥♥</span>
+<span class="text-tertiary-container ml-1 font-['Silkscreen'] text-[11px]">[CREDIT 02]</span>
+</div>
+<div class="font-['Silkscreen'] text-[10px] text-tertiary tracking-wider mt-0.5">
+            [WORLD 3 - STAGE 4] • RANK #3 MIT GUILD
+          </div>
+</div>
+</div>
+<!-- Live Counters & LP Bar -->
+<div class="lg:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-2 px-0 lg:px-2">
+<div class="bg-surface-container border-2 border-outline-variant p-1.5 shadow-[2px_2px_0_#000000]">
+<div class="font-['Press_Start_2P'] text-[8px] text-on-surface-variant">HI-SCORE</div>
+<div class="font-['Press_Start_2P'] text-[12px] text-primary-container mt-1">2,148 LP</div>
+</div>
+<div class="bg-surface-container border-2 border-outline-variant p-1.5 shadow-[2px_2px_0_#000000]">
+<div class="font-['Press_Start_2P'] text-[8px] text-on-surface-variant">CLEARED</div>
+<div class="font-['Press_Start_2P'] text-[12px] text-tertiary mt-1">312 / 1.4K</div>
+</div>
+<div class="bg-surface-container border-2 border-outline-variant p-1.5 shadow-[2px_2px_0_#000000] col-span-2 sm:col-span-1">
+<div class="font-['Press_Start_2P'] text-[8px] text-on-surface-variant">COMBO</div>
+<div class="font-['Press_Start_2P'] text-[11px] text-secondary-container mt-1">14D <span class="arcade-blink">2X!</span></div>
+</div>
+</div>
+<!-- 8-Bit Accolades & Trophies -->
+<div class="lg:col-span-3 flex lg:flex-col justify-between items-end gap-1.5 border-t-2 lg:border-t-0 lg:border-l-2 border-outline-variant/60 pt-2 lg:pt-0 lg:pl-space-md">
+<div class="text-right">
+<div class="font-['Silkscreen'] text-[10px] text-on-surface-variant uppercase">CABINET TROPHIES</div>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-1.5 py-0.5 bg-surface-container border border-primary-container text-[12px] cursor-help" title="Pixel Star: Flawless Run">⭐</span>
+<span class="px-1.5 py-0.5 bg-surface-container border border-primary-container text-[12px] cursor-help" title="Golden Joystick: Hard Streak">🕹️</span>
+<span class="px-1.5 py-0.5 bg-surface-container border border-secondary-container text-[12px] cursor-help" title="8-Bit Elixir: Memory Guru">🧪</span>
+<span class="px-1.5 py-0.5 bg-surface-container border border-tertiary-container text-[12px] cursor-help" title="Diamond Guild Master">💎</span>
+</div>
+</div>
+<div class="font-['VT323'] text-[18px] text-primary-container tracking-wider flex items-center gap-1">
+<span>PASS RATE:</span>
+<span class="text-tertiary font-bold">74.2%</span>
+<span class="font-['Press_Start_2P'] text-[8px] text-secondary-container">[PERFECT!]</span>
+</div>
+</div>
+</div>
+</div>
+<!-- ACTIVE QUEST / BOSS TRIAL HERO MARQUEE (COIN-OP STAGE ENCOUNTER) -->
+<div class="w-full bg-surface-container-low border-4 border-primary-container shadow-[8px_8px_0_#000000] p-space-md lg:p-space-lg relative overflow-hidden">
+<!-- Pixelated brick patterns in corner -->
+<div class="absolute -right-4 -bottom-4 opacity-20 pointer-events-none hidden sm:block">
+<svg class="text-primary-container" fill="none" height="140" shape-rendering="crispEdges" viewbox="0 0 220 140" width="220">
+<rect fill="currentColor" height="16" width="40" x="0" y="0"></rect>
+<rect fill="currentColor" height="16" width="40" x="44" y="0"></rect>
+<rect fill="currentColor" height="16" width="40" x="88" y="0"></rect>
+<rect fill="currentColor" height="16" width="40" x="132" y="0"></rect>
+<rect fill="currentColor" height="16" width="40" x="176" y="0"></rect>
+<rect fill="currentColor" height="16" width="40" x="22" y="20"></rect>
+<rect fill="currentColor" height="16" width="40" x="66" y="20"></rect>
+<rect fill="currentColor" height="16" width="40" x="110" y="20"></rect>
+<rect fill="currentColor" height="16" width="40" x="154" y="20"></rect>
+<rect fill="currentColor" height="16" width="40" x="0" y="40"></rect>
+<rect fill="currentColor" height="16" width="40" x="44" y="40"></rect>
+<rect fill="currentColor" height="16" width="40" x="88" y="40"></rect>
+<rect fill="currentColor" height="16" width="40" x="132" y="40"></rect>
+<rect fill="currentColor" height="16" width="40" x="176" y="40"></rect>
+</svg>
+</div>
+<div class="flex flex-col gap-space-md relative z-10">
+<!-- Stage Banner Header -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm border-b-2 border-outline-variant pb-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 font-['Press_Start_2P'] text-[9px] shadow-[2px_2px_0_#000000]">BOSS STAGE</span>
+<span class="font-['Silkscreen'] text-primary-container text-[12px] tracking-widest">[LEVEL 76 / 120]</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-['Press_Start_2P'] text-[9px] text-error-container bg-error/20 px-2 py-0.5 border border-error">DIFFICULTY: HARD</span>
+<span class="font-['Press_Start_2P'] text-[9px] text-primary bg-surface-container px-2 py-0.5 border border-outline-variant">BOUNTY: +1,200 PTS</span>
+</div>
+</div>
+<!-- Problem Title Display -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md pt-1">
+<div>
+<div class="font-['Silkscreen'] text-[11px] text-tertiary-container tracking-widest uppercase">// CURRENT ENCOUNTER</div>
+<h1 class="font-['Press_Start_2P'] text-[16px] sm:text-[22px] text-primary tracking-wide mt-1 leading-tight">
+            ▶ #76 MINIMUM WINDOW SUBSTRING
+          </h1>
+<p class="font-['VT323'] text-[20px] text-on-surface-variant mt-1 max-w-2xl">
+            Given strings S and T of length M and N, find minimum window substring in S such that every character in T (including duplicates) is included.
+          </p>
+</div>
+<!-- Boss Health Bar Pixel Gauge -->
+<div class="w-full md:w-72 bg-surface-container-lowest border-2 border-secondary-container p-2 shadow-[3px_3px_0_#000000]">
+<div class="flex justify-between items-center text-[10px] font-['Press_Start_2P'] mb-1">
+<span class="text-secondary-container">BOSS HP</span>
+<span class="text-primary-container">18/24 (75%)</span>
+</div>
+<!-- Discrete Segmented 8-bit Life Blocks -->
+<div class="grid grid-cols-12 gap-1 h-4 bg-surface-container p-0.5 border border-outline-variant">
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container"></div>
+<div class="bg-secondary-container/30"></div>
+<div class="bg-secondary-container/30"></div>
+<div class="bg-secondary-container/30"></div>
+</div>
+<div class="font-['Silkscreen'] text-[8px] text-on-surface-variant text-right mt-1">TEST CASES REMAINING: 06</div>
+</div>
+</div>
+<!-- Boss Warning & Profiler Hint Console -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-2">
+<div class="bg-surface-container-lowest border-2 border-error p-space-sm flex items-start gap-space-sm shadow-[3px_3px_0_#000000]">
+<span class="font-['Press_Start_2P'] text-error text-[12px] leading-none mt-1">⚠️</span>
+<div>
+<div class="font-['Press_Start_2P'] text-[9px] text-error">FAIL TICKER: TLE RECORDED</div>
+<div class="font-['VT323'] text-[18px] text-on-error-container mt-0.5 leading-snug">
+              Time limit exceeded on test case #19 (2,001 ms clock vs 2,000 ms ceiling limit).
+            </div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border-2 border-tertiary-container p-space-sm flex items-start gap-space-sm shadow-[3px_3px_0_#000000]">
+<span class="font-['Press_Start_2P'] text-tertiary-container text-[12px] leading-none mt-1">💡</span>
+<div>
+<div class="font-['Press_Start_2P'] text-[9px] text-tertiary">CPU TACTIC: SLIDING WINDOW</div>
+<div class="font-['VT323'] text-[18px] text-on-surface mt-0.5 leading-snug">
+              Frequency map loop creates O(|S|*|Σ|) bottleneck. Swap map to direct ASCII array lookups!
+            </div>
+</div>
+</div>
+</div>
+<!-- Action Push Buttons (Arcade Microswitch Look) -->
+<div class="flex flex-wrap items-center gap-space-md pt-2">
+<!-- Chunky Gold Button -->
+<button class="px-5 py-3 bg-primary-container text-on-primary-container font-['Press_Start_2P'] text-[11px] uppercase tracking-wider border-t-2 border-l-2 border-primary border-b-4 border-r-4 border-inverse-primary shadow-[4px_4px_0_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-none cursor-pointer flex items-center gap-2">
+<span>▶ RESUME QUEST / INSERT COIN</span>
+<span class="text-[12px] animate-bounce">↵</span>
+</button>
+<!-- Chunky Cyan Button -->
+<button class="px-4 py-3 bg-surface-container-high text-tertiary font-['Press_Start_2P'] text-[10px] uppercase tracking-wider border-2 border-tertiary-container shadow-[4px_4px_0_#000000] hover:bg-tertiary-container hover:text-on-tertiary active:translate-x-1 active:translate-y-1 active:shadow-none transition-none cursor-pointer flex items-center gap-2">
+<span>🕹️ REVIEW DIFF / REPLAY</span>
+</button>
+<div class="font-['Silkscreen'] text-[10px] text-on-surface-variant ml-auto hidden sm:block">
+          CABINET MEMORY BUFFER: <span class="text-secondary">READY</span>
+</div>
+</div>
+</div>
+</div>
+<!-- TOURNAMENT BANNER (ARCADE MARQUEE) -->
+<div class="w-full bg-surface-container-lowest border-4 border-secondary-container shadow-[6px_6px_0_#000000] p-space-md relative">
+<div class="flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md w-full md:w-auto">
+<div class="w-12 h-12 bg-secondary-container flex items-center justify-center border-2 border-secondary shadow-[3px_3px_0_#000000] flex-shrink-0">
+<span class="font-['Press_Start_2P'] text-on-secondary-container text-[16px] animate-pulse">⚡</span>
+</div>
+<div>
+<div class="font-['Silkscreen'] text-[10px] text-secondary tracking-widest">NEXT GLOBAL EVENT</div>
+<div class="font-['Press_Start_2P'] text-[13px] text-primary mt-0.5">
+            BIWEEKLY COLLEGIATE ARCADE CLASH #48
+          </div>
+<div class="font-['VT323'] text-[18px] text-on-surface-variant">
+            FORMAT: 4 BOSS STAGES • 120 MINUTE SPEEDRUN • CO-OP TEAM MIT-EECS
+          </div>
+</div>
+</div>
+<!-- Live Clock & Sign-in -->
+<div class="flex items-center justify-between md:justify-end gap-space-md w-full md:w-auto border-t-2 md:border-t-0 border-outline-variant pt-2 md:pt-0">
+<div class="bg-surface-container border-2 border-outline-variant px-3 py-1.5 shadow-[2px_2px_0_#000000] text-center">
+<div class="font-['Press_Start_2P'] text-[8px] text-on-surface-variant">STARTS IN</div>
+<div class="font-['Press_Start_2P'] text-[12px] text-primary-container mt-1 tracking-wider">
+            01D : 04H : 18M
+          </div>
+</div>
+<button class="px-4 py-3 bg-secondary-container text-on-secondary-container font-['Press_Start_2P'] text-[10px] uppercase border-t-2 border-l-2 border-secondary border-b-4 border-r-4 border-on-secondary shadow-[3px_3px_0_#000000] active:translate-x-1 active:translate-y-1 active:shadow-none transition-none cursor-pointer">
+          ENTER LOBBY 🪙
+        </button>
+</div>
+</div>
+</div>
+<!-- TWO-COLUMN MAIN ARENA GRID: SUBMISSIONS LOG + HALL OF FAME -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- LEFT 7 COLS: MATCH LOG / RECENT BATTLES -->
+<div class="lg:col-span-7 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest border-4 border-outline-variant shadow-[6px_6px_0_#000000] p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between border-b-2 border-outline-variant pb-space-xs">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 bg-primary-container"></span>
+<span class="font-['Press_Start_2P'] text-[11px] text-primary tracking-wide">BATTLE LOG // RECENT RUNS</span>
+</div>
+<span class="font-['Silkscreen'] text-[9px] text-tertiary">FEED: REALTIME</span>
+</div>
+<!-- Pixel Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-['VT323'] text-[18px] border-collapse">
+<thead>
+<tr class="border-b-2 border-outline-variant font-['Silkscreen'] text-[9px] text-on-surface-variant">
+<th class="py-2 px-1">STAGE</th>
+<th class="py-2 px-1">VERDICT</th>
+<th class="py-2 px-1">SPEED</th>
+<th class="py-2 px-1">WEAPON</th>
+<th class="py-2 px-1 text-right">TIME</th>
+</tr>
+</thead>
+<tbody class="divide-y-2 divide-outline-variant/40">
+<!-- Row 1: TLE -->
+<tr class="hover:bg-surface-container/50">
+<td class="py-2 px-1">
+<div class="font-bold text-on-surface">#76 Min Window Substring</div>
+<div class="text-[14px] text-on-surface-variant font-['Silkscreen']">WORLD 3-4 [BOSS]</div>
+</td>
+<td class="py-2 px-1">
+<span class="px-1.5 py-0.5 bg-error text-on-error font-['Press_Start_2P'] text-[8px] border border-on-error font-bold tracking-tight shadow-[1px_1px_0_#000000]">
+                    TLE
+                  </span>
+</td>
+<td class="py-2 px-1 text-error">2,001 ms</td>
+<td class="py-2 px-1">
+<span class="px-1 bg-surface-container border border-outline-variant text-[14px] font-['Silkscreen'] text-tertiary">C++20</span>
+</td>
+<td class="py-2 px-1 text-right text-on-surface-variant text-[15px]">12m ago</td>
+</tr>
+<!-- Row 2: 1UP / AC -->
+<tr class="hover:bg-surface-container/50">
+<td class="py-2 px-1">
+<div class="font-bold text-on-surface">#42 Trapping Rain Water</div>
+<div class="text-[14px] text-on-surface-variant font-['Silkscreen']">WORLD 3-2</div>
+</td>
+<td class="py-2 px-1">
+<span class="px-1.5 py-0.5 bg-primary-container text-on-primary-container font-['Press_Start_2P'] text-[8px] font-bold tracking-tight shadow-[1px_1px_0_#000000]">
+                    1UP/AC
+                  </span>
+</td>
+<td class="py-2 px-1 text-primary-container font-bold">4 ms</td>
+<td class="py-2 px-1">
+<span class="px-1 bg-surface-container border border-outline-variant text-[14px] font-['Silkscreen'] text-primary-container">RUST</span>
+</td>
+<td class="py-2 px-1 text-right text-on-surface-variant text-[15px]">2h ago</td>
+</tr>
+<!-- Row 3: 1UP / AC -->
+<tr class="hover:bg-surface-container/50">
+<td class="py-2 px-1">
+<div class="font-bold text-on-surface">#23 Merge k Sorted Lists</div>
+<div class="text-[14px] text-on-surface-variant font-['Silkscreen']">WORLD 2-8</div>
+</td>
+<td class="py-2 px-1">
+<span class="px-1.5 py-0.5 bg-primary-container text-on-primary-container font-['Press_Start_2P'] text-[8px] font-bold tracking-tight shadow-[1px_1px_0_#000000]">
+                    1UP/AC
+                  </span>
+</td>
+<td class="py-2 px-1 text-primary-container font-bold">12 ms</td>
+<td class="py-2 px-1">
+<span class="px-1 bg-surface-container border border-outline-variant text-[14px] font-['Silkscreen'] text-tertiary">C++20</span>
+</td>
+<td class="py-2 px-1 text-right text-on-surface-variant text-[15px]">5h ago</td>
+</tr>
+<!-- Row 4: WA / GAME OVER -->
+<tr class="hover:bg-surface-container/50">
+<td class="py-2 px-1">
+<div class="font-bold text-on-surface">#84 Largest Rectangle Histogram</div>
+<div class="text-[14px] text-on-surface-variant font-['Silkscreen']">WORLD 3-1</div>
+</td>
+<td class="py-2 px-1">
+<span class="px-1.5 py-0.5 bg-secondary-container text-on-secondary-container font-['Press_Start_2P'] text-[7px] font-bold tracking-tight shadow-[1px_1px_0_#000000]">
+                    WA/MISS
+                  </span>
+</td>
+<td class="py-2 px-1 text-on-surface-variant">48 ms</td>
+<td class="py-2 px-1">
+<span class="px-1 bg-surface-container border border-outline-variant text-[14px] font-['Silkscreen'] text-secondary">PYTHON</span>
+</td>
+<td class="py-2 px-1 text-right text-on-surface-variant text-[15px]">1d ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Action Callout -->
+<div class="flex items-center justify-between border-t-2 border-outline-variant pt-2 mt-1">
+<span class="font-['Silkscreen'] text-[9px] text-on-surface-variant">SHOWING 4 OF 1,450 LOGGED COMBATS</span>
+<button class="font-['Press_Start_2P'] text-[8px] text-primary-container hover:underline cursor-pointer">
+            [VIEW COMBAT ARCHIVE ▶]
+          </button>
+</div>
+</div>
+<!-- WEEKLY ARCADE SIDE QUEST TRACKER -->
+<div class="bg-surface-container-low border-2 border-outline-variant p-space-md shadow-[4px_4px_0_#000000]">
+<div class="flex items-center justify-between">
+<div class="font-['Silkscreen'] text-[10px] text-tertiary-container uppercase tracking-wider">
+            ★ SIDE QUEST: DYNAMIC PROGRAMMING SPRINT
+          </div>
+<span class="font-['Press_Start_2P'] text-[9px] text-primary-container">+350 COINS</span>
+</div>
+<div class="flex items-center justify-between gap-2 mt-2">
+<div class="font-['VT323'] text-[20px] text-on-surface">
+            PROGRESS: SOLVE 5 HARD DP STAGES
+          </div>
+<div class="font-['Press_Start_2P'] text-[10px] text-secondary tracking-widest">
+            [■■■□□] 3/5
+          </div>
+</div>
+<div class="w-full bg-surface-container-lowest h-3 border border-outline-variant mt-1.5 p-0.5 flex gap-1">
+<div class="w-1/5 bg-tertiary-container h-full"></div>
+<div class="w-1/5 bg-tertiary-container h-full"></div>
+<div class="w-1/5 bg-tertiary-container h-full"></div>
+<div class="w-1/5 bg-surface-container h-full"></div>
+<div class="w-1/5 bg-surface-container h-full"></div>
+</div>
+</div>
+</div>
+<!-- RIGHT 5 COLS: HALL OF FAME (HI-SCORE LEADERBOARD) -->
+<div class="lg:col-span-5 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest border-4 border-outline-variant shadow-[6px_6px_0_#000000] p-space-md flex flex-col gap-space-sm relative">
+<div class="flex items-center justify-between border-b-2 border-outline-variant pb-space-xs">
+<div class="flex items-center gap-2">
+<span class="font-['Press_Start_2P'] text-primary-container text-[12px]">🏆</span>
+<span class="font-['Press_Start_2P'] text-[11px] text-primary tracking-wide">HALL OF FAME // TOP 5</span>
+</div>
+<span class="font-['Silkscreen'] text-[9px] text-secondary font-bold">CAMPUS DIV</span>
+</div>
+<!-- Retro High-Score Board List -->
+<div class="flex flex-col gap-2 mt-1">
+<!-- Rank 1 -->
+<div class="flex items-center justify-between bg-surface-container p-2 border-2 border-primary-container shadow-[2px_2px_0_#000000]">
+<div class="flex items-center gap-space-sm">
+<span class="font-['Press_Start_2P'] text-[10px] text-primary-container">#1</span>
+<div>
+<div class="font-['Press_Start_2P'] text-[10px] text-primary flex items-center gap-1">
+                  ELENA_R <span class="text-primary-container">👑</span>
+</div>
+<div class="font-['Silkscreen'] text-[8px] text-on-surface-variant">GRANDMASTER • MIT-EECS</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-['Press_Start_2P'] text-[11px] text-primary-container">2,380 LP</div>
+<div class="font-['VT323'] text-[14px] text-tertiary">98.4% WR</div>
+</div>
+</div>
+<!-- Rank 2 -->
+<div class="flex items-center justify-between bg-surface-container p-2 border-2 border-outline-variant shadow-[2px_2px_0_#000000]">
+<div class="flex items-center gap-space-sm">
+<span class="font-['Press_Start_2P'] text-[10px] text-secondary">#2</span>
+<div>
+<div class="font-['Press_Start_2P'] text-[10px] text-on-surface flex items-center gap-1">
+                  LIAM_V <span class="text-secondary">🥈</span>
+</div>
+<div class="font-['Silkscreen'] text-[8px] text-on-surface-variant">MASTER • HARVARD-CS</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-['Press_Start_2P'] text-[11px] text-secondary">2,210 LP</div>
+<div class="font-['VT323'] text-[14px] text-on-surface-variant">91.0% WR</div>
+</div>
+</div>
+<!-- Rank 3: YOU (Highlighted Neon) -->
+<div class="flex items-center justify-between bg-surface-container-high p-2 border-2 border-primary-container shadow-[3px_3px_0_#000000] ring-1 ring-primary-container">
+<div class="flex items-center gap-space-sm">
+<span class="font-['Press_Start_2P'] text-[10px] text-primary-container">#3</span>
+<div>
+<div class="font-['Press_Start_2P'] text-[10px] text-primary flex items-center gap-1">
+                  ALEX_CHEN <span class="text-primary-container font-['Silkscreen'] text-[8px] bg-primary-container text-on-primary-container px-1">YOU</span>
+</div>
+<div class="font-['Silkscreen'] text-[8px] text-tertiary">DIAMOND II • MIT GUILD</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-['Press_Start_2P'] text-[11px] text-primary-container">2,148 LP</div>
+<div class="font-['VT323'] text-[14px] text-primary">74.2% WR</div>
+</div>
+</div>
+<!-- Rank 4 -->
+<div class="flex items-center justify-between bg-surface-container p-2 border-2 border-outline-variant shadow-[2px_2px_0_#000000]">
+<div class="flex items-center gap-space-sm">
+<span class="font-['Press_Start_2P'] text-[10px] text-on-surface-variant">#4</span>
+<div>
+<div class="font-['Press_Start_2P'] text-[10px] text-on-surface">KARTHIK_S</div>
+<div class="font-['Silkscreen'] text-[8px] text-on-surface-variant">DIAMOND I • CMU-ROBOTICS</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-['Press_Start_2P'] text-[11px] text-on-surface">2,095 LP</div>
+<div class="font-['VT323'] text-[14px] text-on-surface-variant">82.5% WR</div>
+</div>
+</div>
+<!-- Rank 5 -->
+<div class="flex items-center justify-between bg-surface-container p-2 border-2 border-outline-variant shadow-[2px_2px_0_#000000]">
+<div class="flex items-center gap-space-sm">
+<span class="font-['Press_Start_2P'] text-[10px] text-on-surface-variant">#5</span>
+<div>
+<div class="font-['Press_Start_2P'] text-[10px] text-on-surface">MAYA_P</div>
+<div class="font-['Silkscreen'] text-[8px] text-on-surface-variant">DIAMOND I • STANFORD</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-['Press_Start_2P'] text-[11px] text-on-surface">1,990 LP</div>
+<div class="font-['VT323'] text-[14px] text-on-surface-variant">78.0% WR</div>
+</div>
+</div>
+</div>
+<!-- Insert Coin Callout -->
+<div class="bg-surface-container-high border-2 border-outline-variant p-2 text-center mt-2">
+<div class="font-['Press_Start_2P'] text-[9px] text-secondary-container arcade-blink tracking-widest">
+            INSERT COIN TO CHALLENGE #2
+          </div>
+<div class="font-['VT323'] text-[16px] text-on-surface-variant mt-0.5">
+            COST: 1 TOURNAMENT TOKEN • WIN: +62 LP TO OVERTAKE
+          </div>
+</div>
+</div>
+<!-- COIN-OP HARDWARE DIAGNOSTIC TELEMETRY -->
+<div class="bg-surface-container-lowest border-2 border-outline-variant p-space-sm font-['VT323'] text-[16px] text-on-surface-variant flex flex-col gap-1 shadow-[3px_3px_0_#000000]">
+<div class="flex justify-between items-center text-tertiary-container font-['Silkscreen'] text-[9px]">
+<span>RASTER MONITOR FEED</span>
+<span>DIP-SW: 01011100</span>
+</div>
+<div class="flex justify-between">
+<span>FRAME BUFFER: 60.02 FPS</span>
+<span>CYCLE CLOCK: 4.19 MHz</span>
+</div>
+<div class="flex justify-between">
+<span>JOYSTICK: 8-WAY SANWA JLF</span>
+<span>ROM VER: v1989.4.2</span>
+</div>
+</div>
+</div>
+</div>
+</div></div></main><footer class="w-full bg-surface-container-lowest border-t-2 border-outline-variant relative z-10"><div class="max-w-[1200px] mx-auto px-gutter-desktop py-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md text-center md:text-left"><div class="font-label-sm text-on-surface-variant"><span class="text-primary font-bold">© 198X-2025 CODEARENA CORP.</span> ALL RIGHTS RESERVED • PRESS START TO CONTINUE • INSERT COIN TO PLAY</div><div class="flex items-center gap-space-md font-label-sm text-secondary-container"><span class="arcade-blink">● LIVE CRT FEED</span><span class="text-on-surface-variant">CRT SCANLINE ENGINE v2.4</span></div></div></footer></body></html>
