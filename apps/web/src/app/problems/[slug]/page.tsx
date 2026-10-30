@@ -64,7 +64,8 @@ function ProblemWorkspaceSkeleton() {
   );
 }
 
-async function ProblemDetailSection({ slug }: { slug: string }) {
+async function ProblemDetailSection({ params }: PageProps) {
+  const { slug } = await params;
   const { problem, source } = await getCachedProblemBySlug(slug);
 
   if (!problem) {
@@ -74,12 +75,10 @@ async function ProblemDetailSection({ slug }: { slug: string }) {
   return <ProblemWorkspace problem={problem} source={source} />;
 }
 
-export default async function ProblemDetailPage({ params }: PageProps) {
-  const { slug } = await params;
-
+export default function ProblemDetailPage({ params }: PageProps) {
   return (
     <Suspense fallback={<ProblemWorkspaceSkeleton />}>
-      <ProblemDetailSection slug={slug} />
+      <ProblemDetailSection params={params} />
     </Suspense>
   );
 }

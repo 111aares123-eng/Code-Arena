@@ -11,6 +11,12 @@ export function VineScrollIndicator({ containerRef, onActiveChange }: VineScroll
   const stemRef = useRef<SVGPathElement>(null);
   const leafRefs = useRef<Array<SVGGElement | null>>([]);
   const [isScrollable, setIsScrollable] = useState(false);
+  const prevCanScrollRef = useRef<boolean | null>(null);
+  const onActiveChangeRef = useRef(onActiveChange);
+
+  useEffect(() => {
+    onActiveChangeRef.current = onActiveChange;
+  }, [onActiveChange]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -37,12 +43,15 @@ export function VineScrollIndicator({ containerRef, onActiveChange }: VineScroll
       const maxScroll = scrollHeight - clientHeight;
       const canScroll = maxScroll > 8;
 
-      setIsScrollable((prev) => {
-        if (prev !== canScroll) {
-          onActiveChange?.(canScroll);
+      if (prevCanScrollRef.current !== canScroll) {
+        prevCanScrollRef.current = canScroll;
+        setIsScrollable(canScroll);
+        if (onActiveChangeRef.current) {
+          queueMicrotask(() => {
+            onActiveChangeRef.current?.(canScroll);
+          });
         }
-        return canScroll;
-      });
+      }
 
       if (!canScroll) return;
 
@@ -104,7 +113,7 @@ export function VineScrollIndicator({ containerRef, onActiveChange }: VineScroll
       window.removeEventListener('resize', updateVine);
       motionQuery.removeEventListener('change', onMotionChange);
     };
-  }, [containerRef, onActiveChange]);
+  }, [containerRef]);
 
   return (
     <div
