@@ -18,4 +18,6 @@ coverage/
 docker/judge0/judge0.conf
 judge0-temp/
 judge0-release.zip
-
+# Turborepo
+.turbo/
+**/.turbo/

@@ -8,12 +8,12 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run ./scripts/dev.ts",
+    "dev": "turbo run dev",
     "dev:web": "bun --filter web dev",
     "dev:api": "bun --filter api dev",
-    "build": "bun --filter web build",
-    "typecheck": "bun --filter @code-arena/db typecheck && bun --filter api typecheck && bun --filter web typecheck",
-    "lint": "bun --filter web lint",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
     "db:generate": "bun --filter @code-arena/db generate",
     "db:migrate": "bun --filter @code-arena/db migrate",
     "db:push": "bun --filter @code-arena/db push",
@@ -22,5 +22,8 @@
     "test": "bun run test:root && bun run test:api",
     "test:root": "node --test tests/*.test.mjs",
     "test:api": "bun --filter api test"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.10"
   }
 }

@@ -57,7 +57,7 @@ Start frontend and API services together in parallel with automated process tree
 ```powershell
 bun run dev
 ```
-> Root `bun run dev` executes `scripts/dev.ts`, which multiplexes output with `[web]` and `[api]` labels, propagates process failures, and ensures graceful tree-termination of child processes (`taskkill /pid ... /T /F` on Windows) on exit or Ctrl+C.
+> Root `bun run dev` executes `turbo run dev`, which orchestrates frontend (`apps/web`) and API (`apps/api`) services in parallel with log streaming and process cleanup.
 
 Or run individual services independently:
 ```powershell
