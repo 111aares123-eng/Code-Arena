@@ -15,12 +15,15 @@ This archive contains the full project, with enhancements to the practice game l
 - Event-stream queues are bounded, and subscriptions/timers are cleaned up on disconnect or write failure.
 - Root backend environment loading and a separate browser environment example.
 
-## Windows PowerShell setup
+## Windows PowerShell Setup & Bun Runtime
 
-Use Node.js 24 or newer and pnpm. Run these commands from the extracted project root. If you already have configuration, merge the example settings rather than overwriting your .env files.
+The project is officially configured for **Bun 1.4.4** (`packageManager: bun@1.4.4`). Run these commands from the extracted project root:
 
 ```powershell
-pnpm install --frozen-lockfile
+# 1. Install dependencies and verify lockfile
+bun install --frozen-lockfile
+
+# 2. Configure environment variables
 Copy-Item .env.example .env
 Copy-Item apps/web/.env.example apps/web/.env.local
 Copy-Item packages/db/.env.example packages/db/.env
@@ -28,54 +31,56 @@ Copy-Item packages/db/.env.example packages/db/.env
 
 Update PostgreSQL credentials in both `.env` and `packages/db/.env`. Set `WEB_ORIGIN` to your web app origin and `NEXT_PUBLIC_API_URL` to the API URL your browser can reach. Public environment variables are embedded at web build time, so rebuild after deployment changes.
 
+### Dependency Services: PostgreSQL, Redis & Judge0
+
+| Service | Port | Environment Variable | Role | Startup / Health Check Instructions |
+| :--- | :--- | :--- | :--- | :--- |
+| **PostgreSQL Database** | `5432` | `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/codearena` | Relational store for problems, test cases, student progress, and submission records | Start PostgreSQL server, ensure database `codearena` exists, then run schema migrations: `bun run db:migrate && bun run db:seed`. |
+| **Judge0 CE Engine** | `2358` | `JUDGE0_BASE_URL=http://localhost:2358` (bound to `127.0.0.1:2358`) | Sandboxed code compiler and test runner for Python and C++ | In `docker/judge0`, start the stack with `docker compose up -d`. Verify via `curl http://localhost:2358/system_info`. |
+| **Judge0 Internal Redis** | `6379` | Internal Docker container network (`redis:7.2.4`) | Job queue broker for Judge0 worker nodes | Automatically provisioned by `docker/judge0/docker-compose.yml`. Bound internally to the Judge0 server container. |
+| **CodeArena Frontend** | `3000` | `WEB_ORIGIN=http://localhost:3000` | Next.js 16.4.3 App Router web application with Turbopack | Started via `bun run dev:web` or root `bun run dev`. Accessible at `http://localhost:3000`. |
+| **CodeArena API** | `3001` | `PORT=3001`, `NEXT_PUBLIC_API_URL=http://localhost:3001` | Hono/tRPC backend providing problems, submission history, test cases, and auth | Started via `bun run dev:api` or root `bun run dev`. Accessible at `http://localhost:3001`. |
+
 With PostgreSQL running and the `codearena` database created:
 
 ```powershell
-pnpm db:migrate
-pnpm db:seed
+bun run db:migrate
+bun run db:seed
 ```
 
-## Services, Dependencies & Port Map
+## Workspace Workflow & Bun Scripts
 
-| Service | Port | Environment Variable | Role |
-| :--- | :--- | :--- | :--- |
-| **CodeArena Frontend** | `3000` | `WEB_ORIGIN=http://localhost:3000` | Next.js 16.4.3 App Router web application |
-| **CodeArena API** | `3001` | `PORT=3001`, `NEXT_PUBLIC_API_URL=http://localhost:3001` | Hono/tRPC backend providing problems, submission history, test cases, and auth |
-| **PostgreSQL Database** | `5432` | `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/codearena` | Relational store for problems, test cases, student progress, and submission records |
-| **Judge0 CE Engine** | `2358` | `JUDGE0_BASE_URL=http://localhost:2358` (bound to `127.0.0.1:2358`) | Sandboxed code compiler and test runner for Python and C++ |
-| **Judge0 Internal Redis** | `6379` | Internal Docker container network (`redis:7.2.4`) | Job queue broker for Judge0 worker nodes |
-
-## Workspace Workflow & Scripts
-
-The root workspace is managed via `pnpm` (`packageManager: pnpm@12.11.2`).
+The monorepo is managed via **Bun workspaces** (`workspaces: ["apps/*", "packages/*"]`).
 
 ### Development
-Start frontend and API services together in parallel:
+Start frontend and API services together in parallel with automated process tree cleanup:
 ```powershell
-pnpm dev
+bun run dev
 ```
+> Root `bun run dev` executes `scripts/dev.ts`, which multiplexes output with `[web]` and `[api]` labels, propagates process failures, and ensures graceful tree-termination of child processes (`taskkill /pid ... /T /F` on Windows) on exit or Ctrl+C.
+
 Or run individual services independently:
 ```powershell
-pnpm dev:web  # Starts Next.js frontend on http://localhost:3000
-pnpm dev:api  # Starts Hono/tRPC backend on http://localhost:3001
+bun run dev:web  # Starts Next.js frontend on http://localhost:3000
+bun run dev:api  # Starts Hono/tRPC backend on http://localhost:3001
 ```
 
 ### Hermetic Test Suites
 The root test command runs all hermetic test suites across both the root regression suite and API routers:
 ```powershell
-pnpm test
+bun run test
 ```
 Individual test suites remain accessible:
 ```powershell
-pnpm test:root  # Executes node --test tests/*.test.mjs (12 tests)
-pnpm test:api   # Executes tsx --test apps/api/test/*.test.ts (104 tests)
+bun run test:root  # Executes node --test tests/*.test.mjs (12 tests)
+bun run test:api   # Executes bun --filter api test (104 tests)
 ```
 
 ### Typechecks & Linting
 ```powershell
-pnpm typecheck  # Typechecks @code-arena/db, apps/api, and apps/web
-pnpm lint       # Lints apps/web using ESLint 9
-pnpm build      # Builds Next.js production bundle with Turbopack
+bun run typecheck  # Typechecks @code-arena/db, apps/api, and apps/web
+bun run lint       # Lints apps/web using ESLint 9
+bun run build      # Builds Next.js production bundle with Turbopack
 ```
 
 ## Monaco Editor Architecture & Reliability
@@ -93,7 +98,7 @@ All packages across the workspace (`apps/web`, `apps/api`, `packages/db`, `packa
 ## Verification Summary
 
 - **Tests**: 116 tests executed across root and API (108 passed, 8 skipped for live-daemon integration, 0 failed).
-- **TypeScript**: `pnpm typecheck` passed with 0 errors across `@code-arena/db`, `api`, and `web`.
-- **Lint**: `pnpm lint` passed with 0 errors and 0 warnings.
-- **Production Build**: `pnpm build` passed with 0 errors, prerendering all 15 routes cleanly.
+- **TypeScript**: `bun run typecheck` passed with 0 errors across `@code-arena/db`, `api`, and `web`.
+- **Lint**: `bun run lint` passed with 0 errors and 0 warnings.
+- **Production Build**: `bun run build` passed with 0 errors, prerendering all 15 routes cleanly.
 

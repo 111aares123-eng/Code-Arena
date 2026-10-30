@@ -13,6 +13,7 @@ export const SERVER_DAY_SNAPSHOT = 'server-render';
 let cachedDaySnapshot = '';
 
 export function getDaySnapshot(): string {
+  if (typeof window === 'undefined') return SERVER_DAY_SNAPSHOT;
   const current = new Date();
   const day = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
   if (day !== cachedDaySnapshot) cachedDaySnapshot = day;

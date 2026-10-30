@@ -58,6 +58,7 @@ const previewBoards: Record<BoardPeriod, { handle: string; points: number; chang
 };
 
 function formatTime(isoDate: string) {
+  if (typeof window === 'undefined') return 'just now';
   const elapsedMinutes = Math.max(0, Math.floor((Date.now() - new Date(isoDate).getTime()) / 60_000));
   if (elapsedMinutes < 1) return 'just now';
   if (elapsedMinutes < 60) return `${elapsedMinutes}m ago`;

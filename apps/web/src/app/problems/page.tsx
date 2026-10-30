@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { connection } from 'next/server';
 import type { ProblemDifficulty } from '@code-arena/shared';
 import { getAllProblemTags } from '../../data/mock-problems';
 import { ProblemListView } from '../../components/problem-list-view';
@@ -63,6 +64,7 @@ async function ProblemListSection({
 }: {
   searchParams: Promise<ProblemsPageSearchParams>;
 }) {
+  await connection();
   const params = await searchParams;
   const q = params.q?.trim() || '';
   const rawDifficulty = params.difficulty;

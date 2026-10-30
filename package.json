@@ -2,21 +2,25 @@
   "name": "code-arena",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "bun@1.4.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "pnpm --parallel --filter web --filter api dev",
-    "dev:web": "pnpm --filter web dev",
-    "dev:api": "pnpm --filter api dev",
-    "build": "pnpm --filter web build",
-    "typecheck": "pnpm --filter @code-arena/db exec tsc --noEmit && pnpm --filter api typecheck && pnpm --filter web exec tsc --noEmit",
-    "lint": "pnpm --filter web lint",
-    "db:generate": "pnpm --filter @code-arena/db generate",
-    "db:migrate": "pnpm --filter @code-arena/db migrate",
-    "db:push": "pnpm --filter @code-arena/db push",
-    "db:studio": "pnpm --filter @code-arena/db studio",
-    "db:seed": "pnpm --filter @code-arena/db seed",
-    "test": "node --test tests/*.test.mjs && pnpm --filter api test",
+    "dev": "bun run ./scripts/dev.ts",
+    "dev:web": "bun --filter web dev",
+    "dev:api": "bun --filter api dev",
+    "build": "bun --filter web build",
+    "typecheck": "bun --filter @code-arena/db typecheck && bun --filter api typecheck && bun --filter web typecheck",
+    "lint": "bun --filter web lint",
+    "db:generate": "bun --filter @code-arena/db generate",
+    "db:migrate": "bun --filter @code-arena/db migrate",
+    "db:push": "bun --filter @code-arena/db push",
+    "db:studio": "bun --filter @code-arena/db studio",
+    "db:seed": "bun --filter @code-arena/db seed",
+    "test": "bun run test:root && bun run test:api",
     "test:root": "node --test tests/*.test.mjs",
-    "test:api": "pnpm --filter api test"
+    "test:api": "bun --filter api test"
   }
 }
