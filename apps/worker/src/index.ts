@@ -11,3 +11,8 @@ export {
   buildCppExecutionNsjailArgs,
   toWslPath,
 } from './runner.ts';
+export {
+  evaluateSubmission,
+  normalizeOutput,
+  compareOutputs,
+} from './evaluator.ts';

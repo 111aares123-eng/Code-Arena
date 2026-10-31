@@ -58,3 +58,83 @@ export interface SandboxConfig {
   /** Base scratch directory for temporary workspaces. */
   scratchDir?: string;
 }
+
+export type SupportedLanguage = 'python' | 'cpp';
+
+export type TestCaseVerdict =
+  | 'Accepted'
+  | 'Wrong Answer'
+  | 'Compilation Error'
+  | 'Runtime Error'
+  | 'Time Limit Exceeded';
+
+export interface EvaluatorTestCase {
+  /** Optional identifier for the test case (e.g. database ID or slug). */
+  id?: string | number;
+  /** Standard input to feed to the program. */
+  input: string;
+  /** Expected standard output. */
+  expectedOutput: string;
+  /** Whether this is a hidden test case whose details must remain secret. */
+  isHidden?: boolean;
+}
+
+export interface EvaluateRequest {
+  /** Programming language to evaluate. */
+  language: SupportedLanguage;
+  /** Source code to evaluate. */
+  code: string;
+  /** List of test cases to run against. */
+  testCases: EvaluatorTestCase[];
+  /** Optional per-test-case time limit in milliseconds. Default: 3000ms. */
+  timeLimitMs?: number;
+  /** Optional per-test-case memory limit in megabytes. Default: 256MB. */
+  memoryLimitMb?: number;
+  /** Optional per-test-case stdout/stderr capture limit. Default: 65536 bytes. */
+  outputLimitBytes?: number;
+  /** Optional sandbox configuration overrides. */
+  config?: SandboxConfig;
+}
+
+export interface TestCaseResult {
+  /** 1-based index of the test case in the testCases array. */
+  index: number;
+  /** Optional identifier passed in the test case. */
+  id?: string | number;
+  /** Whether this was evaluated as a hidden test case. */
+  isHidden: boolean;
+  /** Whether the test case passed. */
+  passed: boolean;
+  /** Outcome verdict for this specific test case. */
+  verdict: TestCaseVerdict;
+  /** Wall-clock execution time in milliseconds. */
+  durationMs: number;
+  /** Standard input (omitted for hidden cases). */
+  input?: string;
+  /** Expected output (omitted for hidden cases). */
+  expectedOutput?: string;
+  /** Actual stdout output (omitted for hidden cases). */
+  actualOutput?: string;
+  /** Stderr output if any (omitted for hidden cases). */
+  stderr?: string;
+  /** Error message if any (omitted for hidden cases). */
+  error?: string;
+}
+
+export interface EvaluationResult {
+  /** Overall verdict for the submission. */
+  verdict: TestCaseVerdict;
+  /** Total number of test cases evaluated. */
+  totalCases: number;
+  /** Number of test cases that passed. */
+  passedCases: number;
+  /** Number of test cases that failed. */
+  failedCases: number;
+  /** Sum of execution durations across all evaluated cases in milliseconds. */
+  totalDurationMs: number;
+  /** Individual results for each test case. */
+  testCaseResults: TestCaseResult[];
+  /** Compilation error details if compilation failed (C++). */
+  compileError?: string;
+}
+
