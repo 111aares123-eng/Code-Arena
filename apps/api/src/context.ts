@@ -41,6 +41,8 @@ export interface ApiContext {
   rateLimiter?: ExecutionRateLimiter;
   /** Flag to bypass rate limiting (used selectively in testing). */
   skipRateLimit?: boolean;
+  /** Execution engine override ('worker' | 'judge0'). */
+  executionEngine?: 'worker' | 'judge0';
 }
 
 export function createApiContext(req: Request, c?: Context): ApiContext {

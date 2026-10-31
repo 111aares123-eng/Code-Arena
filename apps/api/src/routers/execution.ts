@@ -24,6 +24,11 @@ import { dbTestCaseStore, isMissingTestCasesTable } from '../services/test-case-
 import { dbSubmissionStore } from '../services/submission-store';
 import { dbProgressStore } from '../services/progress-store';
 import { getExecutionRateLimiter } from '../services/rate-limiter';
+import {
+  resolveExecutionEngine,
+  executeRunWorker,
+  executeSubmitWorker,
+} from '../services/worker-orchestrator';
 
 const t = initTRPC.context<ApiContext>().create();
 export const router = t.router;
@@ -53,10 +58,12 @@ export const executionRouter = router({
   /**
    * Health-check procedure to verify Judge0 connectivity and environment configuration.
    */
-  health: publicProcedure.query(async () => {
+  health: publicProcedure.query(async ({ ctx }) => {
     const config = getJudge0Config();
     const health = await checkJudge0Health();
     return {
+      executionEngine: resolveExecutionEngine(ctx),
+      workerConfigured: true,
       judge0BaseUrl: config.baseUrl,
       configuredTimeoutMs: config.timeoutMs,
       pythonLangId: config.pythonLangId,
@@ -87,6 +94,13 @@ export const executionRouter = router({
           message: `Problem "${input.problemSlug}" not found.`,
         });
       }
+
+      // Dispatch to self-hosted worker evaluator if configured
+      const engine = resolveExecutionEngine(ctx);
+      if (engine === 'worker') {
+        return await executeRunWorker(ctx, input, found.problem, found.fromDatabase);
+      }
+
       // Run only ever uses the problem's public examples; judge (hidden) cases are not reachable here.
       const problem = found.problem;
 
@@ -182,6 +196,12 @@ export const executionRouter = router({
             code: 'NOT_FOUND',
             message: `Problem "${input.problemSlug}" not found.`,
           });
+        }
+
+        // Dispatch to self-hosted worker evaluator if configured
+        const engine = resolveExecutionEngine(ctx);
+        if (engine === 'worker') {
+          return await executeSubmitWorker(ctx, input, found.problem, found.fromDatabase);
         }
 
         const { problem, fromDatabase } = found;
