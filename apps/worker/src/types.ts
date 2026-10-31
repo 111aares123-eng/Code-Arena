@@ -3,7 +3,7 @@
  */
 
 export interface ExecutionRequest {
-  /** Python source code to execute. */
+  /** Source code to execute. */
   code: string;
   /** Optional standard input to feed to the program. */
   stdin?: string;
@@ -32,6 +32,12 @@ export interface ExecutionResult {
   outputTruncated: boolean;
   /** Internal runner error message, if execution failed before or during sandboxing. */
   error?: string;
+  /** Compilation error message if compilation failed (C++). */
+  compileError?: string;
+  /** Whether compilation failed (C++). */
+  compileFailed?: boolean;
+  /** Wall-clock duration of the compilation in milliseconds (C++). */
+  compileDurationMs?: number;
 }
 
 export interface SandboxConfig {
@@ -39,6 +45,12 @@ export interface SandboxConfig {
   nsjailPath?: string;
   /** Path to python3 binary inside the sandbox. Default: /usr/bin/python3 */
   pythonPath?: string;
+  /** Path to g++ binary inside the sandbox. Default: /usr/bin/g++ */
+  cppCompilerPath?: string;
+  /** Compilation wall-clock time limit in milliseconds for compiled languages. Default: 10000ms */
+  compileTimeLimitMs?: number;
+  /** Compilation memory limit in megabytes (enforced via RLIMIT_AS). Default: 1024MB */
+  compileMemoryLimitMb?: number;
   /** WSL distribution name when running under Windows host. Default: Ubuntu-24.04 */
   wslDistro?: string;
   /** WSL user to execute as when running under Windows host. Default: joshee */

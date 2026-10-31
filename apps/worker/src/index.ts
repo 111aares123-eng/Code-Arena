@@ -1,6 +1,13 @@
 /**
- * CodeArena 2.0 — Minimal Python Worker (apps/worker)
+ * CodeArena 2.0 — Minimal Worker (apps/worker)
  */
 
 export * from './types.ts';
-export { executePython, buildNsjailArgs, toWslPath } from './runner.ts';
+export {
+  executePython,
+  executeCpp,
+  buildNsjailArgs,
+  buildCppCompileNsjailArgs,
+  buildCppExecutionNsjailArgs,
+  toWslPath,
+} from './runner.ts';
