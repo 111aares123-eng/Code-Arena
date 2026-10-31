@@ -42,14 +42,20 @@ export function compareOutputs(
 }
 
 /**
- * Evaluates a submitted program (Python or C++) against a list of authorized test cases.
+ * Evaluates a submitted program (Python or C++) against an explicit list of test cases
+ * authorized and supplied by the caller.
  *
- * Key guarantees:
- * - Executes untrusted code inside unprivileged nsjail sandboxes.
- * - Compares outputs with robust whitespace and newline normalization.
- * - Protects hidden test cases: never discloses input, expected output, actual output,
- *   or error text for any test case marked as hidden.
- * - Computes total, passed, and failed statistics alongside the overall verdict.
+ * ARCHITECTURAL DESIGN & INVARIANTS:
+ * - Caller-Agnostic: The evaluator has no concept of "Run" vs "Submit" and never attempts
+ *   to determine problem context, user role, or submission intent.
+ * - Zero Auto-Fetching: The evaluator does not fetch test cases from a database or filesystem.
+ *   The calling orchestration layer (e.g., API router or queue consumer) owns test-case retrieval.
+ * - Explicit Case Selection: The caller determines which slice of test cases to evaluate:
+ *     1. A single selected visible sample test case.
+ *     2. All visible sample test cases.
+ *     3. The complete server-authorized test suite (samples + hidden tests).
+ * - Hidden Test Privacy: Each test case explicitly specifies `isHidden`. For any hidden case,
+ *   inputs, expected outputs, actual stdout, stderr, and raw errors are never returned or logged.
  */
 export async function evaluateSubmission(
   request: EvaluateRequest

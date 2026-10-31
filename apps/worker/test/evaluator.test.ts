@@ -277,4 +277,55 @@ print("SECRET_EXPECTED_RESULT_67890")
     expect(serialized).not.toContain(secretInput);
     expect(serialized).not.toContain(secretExpected);
   }, 25000);
+
+  it('Test 10: Supports caller-selected test case slices (single sample, all samples, or full suite)', async () => {
+    const code = `import sys
+n = int(sys.stdin.read().strip())
+print(n * 10)
+`;
+    const sampleCase1 = { id: 'sample-1', input: '1', expectedOutput: '10', isHidden: false };
+    const sampleCase2 = { id: 'sample-2', input: '2', expectedOutput: '20', isHidden: false };
+    const hiddenCase1 = { id: 'hidden-1', input: '3', expectedOutput: '30', isHidden: true };
+    const hiddenCase2 = { id: 'hidden-2', input: '4', expectedOutput: '40', isHidden: true };
+
+    // Slice 1: Caller supplies a single selected sample case
+    const singleResult = await evaluateSubmission({
+      language: 'python',
+      code,
+      testCases: [sampleCase1],
+      timeLimitMs: 5000,
+    });
+    expect(singleResult.totalCases).toBe(1);
+    expect(singleResult.passedCases).toBe(1);
+    expect(singleResult.verdict).toBe('Accepted');
+    expect(singleResult.testCaseResults[0].id).toBe('sample-1');
+    expect(singleResult.testCaseResults[0].actualOutput?.trim()).toBe('10');
+
+    // Slice 2: Caller supplies all visible sample cases
+    const allSamplesResult = await evaluateSubmission({
+      language: 'python',
+      code,
+      testCases: [sampleCase1, sampleCase2],
+      timeLimitMs: 5000,
+    });
+    expect(allSamplesResult.totalCases).toBe(2);
+    expect(allSamplesResult.passedCases).toBe(2);
+    expect(allSamplesResult.verdict).toBe('Accepted');
+
+    // Slice 3: Caller supplies full server-authorized suite (samples + hidden)
+    const fullSuiteResult = await evaluateSubmission({
+      language: 'python',
+      code,
+      testCases: [sampleCase1, sampleCase2, hiddenCase1, hiddenCase2],
+      timeLimitMs: 5000,
+    });
+    expect(fullSuiteResult.totalCases).toBe(4);
+    expect(fullSuiteResult.passedCases).toBe(4);
+    expect(fullSuiteResult.verdict).toBe('Accepted');
+    expect(fullSuiteResult.testCaseResults[2].isHidden).toBe(true);
+    expect(fullSuiteResult.testCaseResults[2].actualOutput).toBeUndefined();
+    expect(fullSuiteResult.testCaseResults[3].isHidden).toBe(true);
+    expect(fullSuiteResult.testCaseResults[3].actualOutput).toBeUndefined();
+  }, 30000);
 });
+
