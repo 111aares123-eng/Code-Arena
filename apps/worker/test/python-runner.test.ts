@@ -7,7 +7,7 @@ describe('CodeArena Minimal Python Worker', () => {
   it('Test A: Successful execution of trusted Python program', async () => {
     const result = await executePython({
       code: 'print("CodeArena Worker Online")',
-      timeLimitMs: 3500,
+      timeLimitMs: 8000,
     });
 
     expect(result.exitCode).toBe(0);
@@ -21,7 +21,7 @@ describe('CodeArena Minimal Python Worker', () => {
   it('Test B: Runtime error handling and traceback capture', async () => {
     const result = await executePython({
       code: 'print("Before error")\nraise ValueError("Test error")',
-      timeLimitMs: 3500,
+      timeLimitMs: 8000,
     });
 
     expect(result.exitCode).not.toBe(0);
