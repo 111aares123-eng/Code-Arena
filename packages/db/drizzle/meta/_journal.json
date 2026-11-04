@@ -22,6 +22,20 @@
       "when": 1792313362360,
       "tag": "0002_futuristic_ironclad",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792398978804,
+      "tag": "0003_purple_unicorn",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792406221425,
+      "tag": "0004_dusty_changeling",
+      "breakpoints": true
     }
   ]
 }
